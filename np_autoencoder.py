@@ -25,7 +25,7 @@ class Autoencoder(NNModelBase):
 
     @staticmethod
     def get_error(predictions, labels):
-        return (0.5 * (predictions - labels)**2).sum()
+        return (0.5 * (predictions - labels) ** 2).sum()
 
     def initialize_parameters(self):
         self.W_xh = self.weight_init(self.input_dim, self.hidden_dim)
@@ -99,7 +99,7 @@ def simple_example():
 
     X_pred = mod.predict(X)
 
-    mse = ((X_pred - X)**2).mean()
+    mse = ((X_pred - X) ** 2).mean()
 
     print("\nMSE between actual and reconstructed: {0:0.09f}".format(mse))
 
@@ -113,5 +113,5 @@ def simple_example():
     return r2
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     simple_example()

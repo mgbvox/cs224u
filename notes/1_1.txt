@@ -1,0 +1,11 @@
+What forms of non-sequential self-supervized training exist? Models?
+
+See HELM (stanford group)
+
+
+"How do we inject truth" -> AI philosophy, what's the SOTA?
+
+
+What research exists re: parallels between LLMs and neural (biological) networks?
+
+"Modularity of Mind"? - emergent modularity in LLMs? 

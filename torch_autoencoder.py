@@ -11,10 +11,7 @@ __version__ = "CS224u, Stanford, Spring 2022"
 
 
 class TorchAutoencoder(TorchModelBase):
-    def __init__(self,
-            hidden_dim=50,
-            hidden_activation=nn.Tanh(),
-            **base_kwargs):
+    def __init__(self, hidden_dim=50, hidden_activation=nn.Tanh(), **base_kwargs):
         """
         A simple autoencoder:
 
@@ -52,7 +49,7 @@ class TorchAutoencoder(TorchModelBase):
         self.hidden_activation = hidden_activation
         super().__init__(**base_kwargs)
         self.loss = nn.MSELoss(reduction="mean")
-        self.params += ['hidden_dim', 'hidden_activation']
+        self.params += ["hidden_dim", "hidden_activation"]
 
     def build_dataset(self, X, y=None):
         """
@@ -108,7 +105,8 @@ class TorchAutoencoder(TorchModelBase):
         return nn.Sequential(
             nn.Linear(self.input_dim, self.hidden_dim),
             self.hidden_activation,
-            nn.Linear(self.hidden_dim, self.output_dim))
+            nn.Linear(self.hidden_dim, self.output_dim),
+        )
 
     def fit(self, X):
         """Returns the matrix of hidden representations.
@@ -229,7 +227,7 @@ def simple_example():
 
     X_pred = mod.predict(X)
 
-    mse = ((X_pred - X)**2).mean()
+    mse = ((X_pred - X) ** 2).mean()
 
     print("\nMSE between actual and reconstructed: {}".format(mse))
 
@@ -243,5 +241,5 @@ def simple_example():
     return r2
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     simple_example()

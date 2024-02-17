@@ -49,8 +49,7 @@ class TorchGloVeModel(nn.Module):
         self.bc = self._init_weights(self.n_words, 1)
 
     def _init_weights(self, m, n):
-        return nn.Parameter(
-            xavier_uniform_(torch.empty(m, n)))
+        return nn.Parameter(xavier_uniform_(torch.empty(m, n)))
 
     def forward(self, X_log, idx):
         """
@@ -103,7 +102,7 @@ class TorchGloVe(TorchModelBase):
         if model_kwargs.get("early_stopping"):
             self.validation_fraction = 1.0
         self.loss = TorchGloVeLoss()
-        self.params += ['embed_dim', 'alpha', 'xmax']
+        self.params += ["embed_dim", "alpha", "xmax"]
 
     def build_dataset(self, X_log, weights):
         """
@@ -175,7 +174,7 @@ class TorchGloVe(TorchModelBase):
         #
         # to the full count matrix:
         bounded = np.minimum(X_vals, self.xmax)
-        weights = (bounded / self.xmax)**self.alpha
+        weights = (bounded / self.xmax) ** self.alpha
         # Precompute log X[i, j] for all i, j:
         X_log = utils.log_of_array_ignoring_zeros(X_vals)
         super().fit(X_log, weights)
@@ -231,11 +230,14 @@ def simple_example():
 
     utils.fix_random_seeds()
 
-    X = np.array([
-        [4.,  4.,  2.,  0.],
-        [4., 61.,  8., 18.],
-        [2.,  8., 10.,  0.],
-        [0., 18.,  0.,  5.]])
+    X = np.array(
+        [
+            [4.0, 4.0, 2.0, 0.0],
+            [4.0, 61.0, 8.0, 18.0],
+            [2.0, 8.0, 10.0, 0.0],
+            [0.0, 18.0, 0.0, 5.0],
+        ]
+    )
 
     mod = TorchGloVe(embed_dim=2, max_iter=1000)
 
@@ -246,9 +248,11 @@ def simple_example():
     print("\nLearned vectors:")
     print(G)
 
-    print("We expect the dot product of learned vectors "
-          "to be proportional to the log co-occurrence probs. "
-          "Let's see how close we came:")
+    print(
+        "We expect the dot product of learned vectors "
+        "to be proportional to the log co-occurrence probs. "
+        "Let's see how close we came:"
+    )
 
     corr = mod.score(X)
 
@@ -257,5 +261,5 @@ def simple_example():
     return corr
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     simple_example()

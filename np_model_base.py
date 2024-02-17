@@ -7,14 +7,16 @@ __version__ = "CS224u, Stanford, Spring 2022"
 
 
 class NNModelBase(object):
-    def __init__(self,
-            hidden_dim=50,
-            hidden_activation=np.tanh,
-            d_hidden_activation=d_tanh,
-            eta=0.01,
-            max_iter=100,
-            tol=1e-6,
-            display_progress=True):
+    def __init__(
+        self,
+        hidden_dim=50,
+        hidden_activation=np.tanh,
+        d_hidden_activation=d_tanh,
+        eta=0.01,
+        max_iter=100,
+        tol=1e-6,
+        display_progress=True,
+    ):
         self.hidden_dim = hidden_dim
         self.hidden_activation = hidden_activation
         self.d_hidden_activation = d_hidden_activation
@@ -22,7 +24,7 @@ class NNModelBase(object):
         self.max_iter = max_iter
         self.tol = tol
         self.display_progress = display_progress
-        self.params = ['hidden_dim', 'eta', 'max_iter']
+        self.params = ["hidden_dim", "eta", "max_iter"]
 
     def initialize_parameters(self):
         raise NotImplementedError
@@ -57,7 +59,7 @@ class NNModelBase(object):
         training_data = list(zip(X, y))
         # SGD:
         iteration = 0
-        for iteration in range(1, self.max_iter+1):
+        for iteration in range(1, self.max_iter + 1):
             error = 0.0
             random.shuffle(training_data)
             for ex, labels in training_data:
@@ -65,20 +67,25 @@ class NNModelBase(object):
                 error += self.get_error(predictions, labels)
                 # Back-prop:
                 gradients = self.backward_propagation(
-                    hidden_states, predictions, ex, labels)
+                    hidden_states, predictions, ex, labels
+                )
                 self.update_parameters(gradients)
             error /= len(training_data)
             if error <= self.tol:
                 if self.display_progress:
                     progress_bar(
                         "Converged on iteration {} with error {}".format(
-                            iteration, error))
+                            iteration, error
+                        )
+                    )
                 break
             else:
                 if self.display_progress:
                     progress_bar(
-                        "Finished epoch {} of {}; error is {}".format
-                        (iteration, self.max_iter, error))
+                        "Finished epoch {} of {}; error is {}".format(
+                            iteration, self.max_iter, error
+                        )
+                    )
         return self
 
     @staticmethod
@@ -101,8 +108,7 @@ class NNModelBase(object):
 
     @staticmethod
     def _define_embedding_matrix(vocab_size, embed_dim):
-        return np.random.uniform(
-            low=-1.0, high=1.0, size=(vocab_size, embed_dim))
+        return np.random.uniform(low=-1.0, high=1.0, size=(vocab_size, embed_dim))
 
     def predict_one_proba(self, seq):
         """Softmax predictions for a single example.
@@ -184,7 +190,7 @@ class NNModelBase(object):
         if w in self.vocab_lookup:
             word_index = self.vocab_lookup[w]
         else:
-            word_index = self.vocab_lookup['$UNK']
+            word_index = self.vocab_lookup["$UNK"]
         return self.embedding[word_index]
 
     @staticmethod
@@ -204,7 +210,7 @@ class NNModelBase(object):
         np.array, shape `(m, n)`
 
         """
-        #x = np.sqrt(6.0/(m+n))
+        # x = np.sqrt(6.0/(m+n))
         x = np.sqrt(1.0 / n)
         return randmatrix(m, n, lower=-x, upper=x)
 
@@ -285,8 +291,8 @@ class NNModelBase(object):
         params = self.params.copy()
         # Obligatorily add `vocab` so that sklearn passes it in when
         # creating new model instances during cross-validation:
-        if hasattr(self, 'vocab'):
-            params += ['vocab']
+        if hasattr(self, "vocab"):
+            params += ["vocab"]
         return {p: getattr(self, p) for p in params}
 
     def set_params(self, **params):

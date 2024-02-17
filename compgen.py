@@ -33,10 +33,11 @@ def recogs_exact_match(gold, pred, flag="000000"):
 
 
 def normalize_formula(phi):
-    return phi.replace(" ", "").replace("AND" , " AND ")
+    return phi.replace(" ", "").replace("AND", " AND ")
 
 
-binary_pred_re = re.compile(r"""
+binary_pred_re = re.compile(
+    r"""
     (\w+)
     \s*
     \(
@@ -47,17 +48,22 @@ binary_pred_re = re.compile(r"""
     \s*
     (\d+)
     \s*
-    \)""", re.VERBOSE)
+    \)""",
+    re.VERBOSE,
+)
 
 
-unary_pred_re = re.compile(r"""
+unary_pred_re = re.compile(
+    r"""
     (\w+)
     \s*
     \(
     \s*
     (\d+)
     \s*
-    \)""", re.VERBOSE)
+    \)""",
+    re.VERBOSE,
+)
 
 
 def _candidate_variable_maps(gold, pred):
@@ -108,7 +114,7 @@ def get_variables(phi):
 
 
 def get_conj_set(phi):
-    conj_splitter_re  = re.compile(r"\s*(?:AND|;)\s*")
+    conj_splitter_re = re.compile(r"\s*(?:AND|;)\s*")
     return set(conj_splitter_re.split(phi))
 
 

@@ -8,12 +8,18 @@ __version__ = "CS224u, Stanford, Spring 2023"
 
 
 def get_IIT_equality_dataset_both(embed_dim, size):
-    train_dataset = IIT_PremackDatasetBoth(
-        embed_dim=embed_dim,
-        size=size)
-    X_base_train, X_sources_train,  y_base_train, y_IIT_train, interventions = train_dataset.create()
+    train_dataset = IIT_PremackDatasetBoth(embed_dim=embed_dim, size=size)
+    (
+        X_base_train,
+        X_sources_train,
+        y_base_train,
+        y_IIT_train,
+        interventions,
+    ) = train_dataset.create()
     X_base_train = torch.tensor(X_base_train)
-    X_sources_train = [torch.tensor(X_source_train) for X_source_train in X_sources_train]
+    X_sources_train = [
+        torch.tensor(X_source_train) for X_source_train in X_sources_train
+    ]
     y_base_train = torch.tensor(y_base_train)
     y_IIT_train = torch.tensor(y_IIT_train)
     interventions = torch.tensor(interventions)
@@ -21,15 +27,21 @@ def get_IIT_equality_dataset_both(embed_dim, size):
 
 
 def get_IIT_equality_dataset(variable, embed_dim, size):
-    class_size = size/2
+    class_size = size / 2
     train_dataset = IIT_PremackDataset(
-        variable,
-        embed_dim=embed_dim,
-        n_pos=class_size,
-        n_neg=class_size)
-    X_base_train, X_sources_train, y_base_train, y_IIT_train, interventions = train_dataset.create()
+        variable, embed_dim=embed_dim, n_pos=class_size, n_neg=class_size
+    )
+    (
+        X_base_train,
+        X_sources_train,
+        y_base_train,
+        y_IIT_train,
+        interventions,
+    ) = train_dataset.create()
     X_base_train = torch.tensor(X_base_train)
-    X_sources_train = [torch.tensor(X_source_train) for X_source_train in X_sources_train]
+    X_sources_train = [
+        torch.tensor(X_source_train) for X_source_train in X_sources_train
+    ]
     y_base_train = torch.tensor(y_base_train)
     y_IIT_train = torch.tensor(y_IIT_train)
     interventions = torch.tensor(interventions)
@@ -37,17 +49,15 @@ def get_IIT_equality_dataset(variable, embed_dim, size):
 
 
 def get_equality_dataset(embed_dim, size):
-    class_size = size/2
+    class_size = size / 2
     train_dataset = PremackDataset(
-        embed_dim=embed_dim,
-        n_pos=class_size,
-        n_neg=class_size)
+        embed_dim=embed_dim, n_pos=class_size, n_neg=class_size
+    )
     X_train, y_train = train_dataset.create()
 
     test_dataset = PremackDataset(
-        embed_dim=embed_dim,
-        n_pos=class_size,
-        n_neg=class_size)
+        embed_dim=embed_dim, n_pos=class_size, n_neg=class_size
+    )
     X_test, y_test = test_dataset.create()
 
     train_dataset.test_disjoint(test_dataset)
@@ -135,8 +145,9 @@ class EqualityDataset:
         these_vecs = {tuple(x) for pair, label in self.data for x in pair}
         other_vecs = {tuple(x) for pair, label in other_dataset.data for x in pair}
         shared = these_vecs & other_vecs
-        assert len(shared) == 0, \
-            f"This dataset and the other dataset shared {len(shared)} word-level reps."
+        assert (
+            len(shared) == 0
+        ), f"This dataset and the other dataset shared {len(shared)} word-level reps."
 
     def _create_pos(self):
         data = []
@@ -163,8 +174,15 @@ class PremackDataset:
     POS_LABEL = 1
     NEG_LABEL = 0
 
-    def __init__(self, embed_dim=50, n_pos=500, n_neg=500,
-                 flatten_root=True, flatten_leaves=True, intermediate=False):
+    def __init__(
+        self,
+        embed_dim=50,
+        n_pos=500,
+        n_neg=500,
+        flatten_root=True,
+        flatten_leaves=True,
+        intermediate=False,
+    ):
         """Creates Premack datasets. Conceptually, the instances are
 
         (((a, b), (c, d)), label)
@@ -220,11 +238,12 @@ class PremackDataset:
         self.n_pos = n_pos
         self.n_neg = n_neg
 
-        for n, v in ((n_pos, 'n_pos'), (n_neg, 'n_neg')):
+        for n, v in ((n_pos, "n_pos"), (n_neg, "n_neg")):
             if n % 2 != 0:
                 raise ValueError(
                     f"The value of {v} must be even to ensure a balanced "
-                    f"split across its two sub-types of the {v} class.")
+                    f"split across its two sub-types of the {v} class."
+                )
 
         self.n_same_same = int(n_pos / 2)
         self.n_diff_diff = int(n_pos / 2)
@@ -276,8 +295,10 @@ class PremackDataset:
         random.shuffle(self.data)
         data = self.data.copy()
         if self.flatten_root or self.flatten_leaves:
-            data = [((np.concatenate(x1), np.concatenate(x2)), label)
-                    for (x1, x2), label in data]
+            data = [
+                ((np.concatenate(x1), np.concatenate(x2)), label)
+                for (x1, x2), label in data
+            ]
         if self.flatten_root:
             data = [(np.concatenate(x), label) for x, label in data]
         X, y = zip(*data)
@@ -286,13 +307,22 @@ class PremackDataset:
         return self.X, self.y
 
     def test_disjoint(self, other_dataset):
-        these_vecs = {tuple(x) for root_pair, label in self.data
-                               for pair in root_pair for x in pair}
-        other_vecs = {tuple(x) for root_pair, label in other_dataset.data
-                               for pair in root_pair for x in pair}
+        these_vecs = {
+            tuple(x)
+            for root_pair, label in self.data
+            for pair in root_pair
+            for x in pair
+        }
+        other_vecs = {
+            tuple(x)
+            for root_pair, label in other_dataset.data
+            for pair in root_pair
+            for x in pair
+        }
         shared = these_vecs & other_vecs
-        assert len(shared) == 0, \
-            f"This dataset and the other dataset shared {len(shared)} word-level reps."
+        assert (
+            len(shared) == 0
+        ), f"This dataset and the other dataset shared {len(shared)} word-level reps."
 
     def _create_same_same(self):
         data = []
@@ -349,7 +379,9 @@ class PremackDatasetLeafFlattened(PremackDataset):
             n_neg=n_neg,
             flatten_leaves=True,
             flatten_root=False,
-            intermediate=False)
+            intermediate=False,
+        )
+
 
 class IIT_PremackDataset:
 
@@ -358,19 +390,28 @@ class IIT_PremackDataset:
     POS_LABEL = 1
     NEG_LABEL = 0
 
-    def __init__(self, variable, embed_dim=50, n_pos=500, n_neg=500,
-                 flatten_root=True, flatten_leaves=True, intermediate=False):
+    def __init__(
+        self,
+        variable,
+        embed_dim=50,
+        n_pos=500,
+        n_neg=500,
+        flatten_root=True,
+        flatten_leaves=True,
+        intermediate=False,
+    ):
 
         self.variable = variable
         self.embed_dim = embed_dim
         self.n_pos = n_pos
         self.n_neg = n_neg
 
-        for n, v in ((n_pos, 'n_pos'), (n_neg, 'n_neg')):
+        for n, v in ((n_pos, "n_pos"), (n_neg, "n_neg")):
             if n % 2 != 0:
                 raise ValueError(
                     f"The value of {v} must be even to ensure a balanced "
-                    f"split across its two sub-types of the {v} class.")
+                    f"split across its two sub-types of the {v} class."
+                )
 
         self.n_same_same_to_same = int(n_pos / 4)
         self.n_diff_diff_to_same = int(n_neg / 4)
@@ -399,11 +440,27 @@ class IIT_PremackDataset:
         random.shuffle(self.data)
         data = self.data.copy()
         if self.flatten_root or self.flatten_leaves:
-            data = [((np.concatenate(x1), np.concatenate(x2)),(np.concatenate(x3), np.concatenate(x4)), base_label, IIT_label, intervention)
-                    for (x1, x2,x3,x4), base_label, IIT_label, intervention in data]
+            data = [
+                (
+                    (np.concatenate(x1), np.concatenate(x2)),
+                    (np.concatenate(x3), np.concatenate(x4)),
+                    base_label,
+                    IIT_label,
+                    intervention,
+                )
+                for (x1, x2, x3, x4), base_label, IIT_label, intervention in data
+            ]
         if self.flatten_root:
-            data = [(np.concatenate(base), np.concatenate(source), label, IIT_label, intervention)
-                    for base, source, label, IIT_label, intervention in data]
+            data = [
+                (
+                    np.concatenate(base),
+                    np.concatenate(source),
+                    label,
+                    IIT_label,
+                    intervention,
+                )
+                for base, source, label, IIT_label, intervention in data
+            ]
         base, source, y, IIT_y, interventions = zip(*data)
         self.base = np.array(base)
         self.source = np.array(source)
@@ -430,7 +487,7 @@ class IIT_PremackDataset:
                 source_right = self._create_same_pair()
                 intervention = self.V2
                 IIT_label = self.POS_LABEL
-            rep = (base_left, base_right, source_left,source_right)
+            rep = (base_left, base_right, source_left, source_right)
             data.append((rep, base_label, IIT_label, intervention))
         return data
 
@@ -450,7 +507,7 @@ class IIT_PremackDataset:
                 source_right = self._create_same_pair()
                 IIT_label = self.NEG_LABEL
                 intervention = self.V2
-            rep = (base_left, base_right, source_left,source_right)
+            rep = (base_left, base_right, source_left, source_right)
             data.append((rep, base_label, IIT_label, intervention))
         return data
 
@@ -470,7 +527,7 @@ class IIT_PremackDataset:
                 source_right = self._create_same_pair()
                 IIT_label = self.POS_LABEL
                 intervention = self.V2
-            rep = (base_left, base_right, source_left,source_right)
+            rep = (base_left, base_right, source_left, source_right)
             data.append((rep, base_label, IIT_label, intervention))
         return data
 
@@ -490,7 +547,7 @@ class IIT_PremackDataset:
                 source_right = self._create_same_pair()
                 IIT_label = self.NEG_LABEL
                 intervention = self.V2
-            rep = (base_left, base_right, source_left,source_right)
+            rep = (base_left, base_right, source_left, source_right)
             data.append((rep, base_label, IIT_label, intervention))
         return data
 
@@ -510,7 +567,7 @@ class IIT_PremackDataset:
                 source_right = self._create_diff_pair()
                 IIT_label = self.NEG_LABEL
                 intervention = self.V2
-            rep = (base_left, base_right, source_left,source_right)
+            rep = (base_left, base_right, source_left, source_right)
             data.append((rep, base_label, IIT_label, intervention))
         return data
 
@@ -530,7 +587,7 @@ class IIT_PremackDataset:
                 source_right = self._create_diff_pair()
                 IIT_label = self.POS_LABEL
                 intervention = self.V2
-            rep = (base_left, base_right, source_left,source_right)
+            rep = (base_left, base_right, source_left, source_right)
             data.append((rep, base_label, IIT_label, intervention))
         return data
 
@@ -550,7 +607,7 @@ class IIT_PremackDataset:
                 source_right = self._create_diff_pair()
                 IIT_label = self.NEG_LABEL
                 intervention = self.V2
-            rep = (base_left, base_right, source_left,source_right)
+            rep = (base_left, base_right, source_left, source_right)
             data.append((rep, base_label, IIT_label, intervention))
         return data
 
@@ -570,12 +627,12 @@ class IIT_PremackDataset:
                 source_right = self._create_diff_pair()
                 IIT_label = self.POS_LABEL
                 intervention = self.V2
-            rep = (base_left, base_right, source_left,source_right)
+            rep = (base_left, base_right, source_left, source_right)
             data.append((rep, base_label, IIT_label, intervention))
         return data
 
     def _create_random_pair(self):
-        if random.choice([True,False]):
+        if random.choice([True, False]):
             return self._create_same_pair()
         else:
             return self._create_diff_pair()
@@ -599,11 +656,17 @@ class IIT_PremackDatasetBoth:
     NEG_LABEL = 0
     both_coord_id = 2
 
-    def __init__(self, size= 1000, embed_dim=50,  flatten_root=True, flatten_leaves=True, intermediate=False):
+    def __init__(
+        self,
+        size=1000,
+        embed_dim=50,
+        flatten_root=True,
+        flatten_leaves=True,
+        intermediate=False,
+    ):
 
         self.embed_dim = embed_dim
-        self.size= size
-
+        self.size = size
 
         self.flatten_root = flatten_root
         self.flatten_leaves = flatten_leaves
@@ -621,7 +684,7 @@ class IIT_PremackDatasetBoth:
                 IIT_label = self.POS_LABEL
             else:
                 IIT_label = self.NEG_LABEL
-            data.append((rep,base_label, IIT_label, self.both_coord_id))
+            data.append((rep, base_label, IIT_label, self.both_coord_id))
         random.shuffle(data)
         data = data.copy()
         if self.flatten_root or self.flatten_leaves:
@@ -630,15 +693,33 @@ class IIT_PremackDatasetBoth:
                     (
                         (np.concatenate(x1), np.concatenate(x2)),
                         (np.concatenate(x3), np.concatenate(x4)),
-                        (np.concatenate(x5), np.concatenate(x6))
+                        (np.concatenate(x5), np.concatenate(x6)),
                     ),
-                    base_label, IIT_label, intervention
+                    base_label,
+                    IIT_label,
+                    intervention,
                 )
-                for (x1, x2,x3,x4,x5,x6), base_label, IIT_label, intervention in data
+                for (
+                    x1,
+                    x2,
+                    x3,
+                    x4,
+                    x5,
+                    x6,
+                ), base_label, IIT_label, intervention in data
             ]
         if self.flatten_root:
-            data = [(np.concatenate(base), np.concatenate(source),np.concatenate(source2), label, IIT_label, intervention)
-                    for (base, source, source2), label, IIT_label, intervention in data]
+            data = [
+                (
+                    np.concatenate(base),
+                    np.concatenate(source),
+                    np.concatenate(source2),
+                    label,
+                    IIT_label,
+                    intervention,
+                )
+                for (base, source, source2), label, IIT_label, intervention in data
+            ]
         base, source, source2, y, IIT_y, interventions = zip(*data)
         self.base = np.array(base)
         self.source = np.array(source)
@@ -646,11 +727,16 @@ class IIT_PremackDatasetBoth:
         self.y = np.array(y)
         self.IIT_y = np.array(IIT_y)
         self.interventions = np.array(interventions)
-        return self.base, [self.source, self.source2], self.y, self.IIT_y, self.interventions
-
+        return (
+            self.base,
+            [self.source, self.source2],
+            self.y,
+            self.IIT_y,
+            self.interventions,
+        )
 
     def _create_random_pair(self):
-        if random.choice([True,False]):
+        if random.choice([True, False]):
             return self._create_same_pair()
         else:
             return self._create_diff_pair()

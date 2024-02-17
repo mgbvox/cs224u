@@ -33,16 +33,18 @@ PARAMS_WITH_TEST_VALUES = [
     ["early_stopping", True],
     ["validation_fraction", 0.12],
     ["n_iter_no_change", 11],
-    ["tol", 0.0001]]
+    ["tol", 0.0001],
+]
 
 
 @pytest.fixture
 def XOR():
     dataset = [
-        ([1.,1.], True),
-        ([1.,0.], False),
-        ([0.,1.], False),
-        ([0.,0.], True)]
+        ([1.0, 1.0], True),
+        ([1.0, 0.0], False),
+        ([0.0, 1.0], False),
+        ([0.0, 0.0], True),
+    ]
     X, y = zip(*dataset)
     X = np.array(X)
     y = list(y)
@@ -55,14 +57,14 @@ def digits():
     X = digits.data
     y = digits.target
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.33, random_state=42)
+        X, y, test_size=0.33, random_state=42
+    )
     return X_train, X_test, y_train, y_test
 
 
 class SoftmaxClassifier(TorchShallowNeuralClassifier):
     def build_graph(self):
-        return nn.Sequential(
-            nn.Linear(self.input_dim, self.n_classes_))
+        return nn.Sequential(nn.Linear(self.input_dim, self.n_classes_))
 
 
 def test_softmax_classifier_subclass(digits):
@@ -79,7 +81,7 @@ def test_optimizer_keywords(XOR, expected):
     mod = SoftmaxClassifier(amsgrad=expected)
     mod.fit(X, y)
     assert mod.amsgrad == expected
-    assert mod.optimizer.param_groups[0]['amsgrad'] == expected
+    assert mod.optimizer.param_groups[0]["amsgrad"] == expected
 
 
 @pytest.mark.parametrize("arg_count", [1, 2, 3, 4, 5])
@@ -91,19 +93,15 @@ def test_build_validation_split(arg_count):
     expected_train_size = n_examples - expected_dev_size
     args = [np.ones((n_examples, n_features)) for _ in range(arg_count)]
     train, dev = TorchModelBase._build_validation_split(
-        *args,
-        validation_fraction=validation_fraction)
+        *args, validation_fraction=validation_fraction
+    )
     assert len(train) == arg_count
     assert len(dev) == arg_count
     assert all(x.shape == (expected_train_size, n_features) for x in train)
     assert all(x.shape == (expected_dev_size, n_features) for x in dev)
 
 
-@pytest.mark.parametrize("epoch_error, expected", [
-    [0.75, 6],
-    [0.50, 0],
-    [0.25, 0]
-])
+@pytest.mark.parametrize("epoch_error, expected", [[0.75, 6], [0.50, 0], [0.25, 0]])
 def test_update_no_improvement_count_errors(epoch_error, expected):
     mod = TorchModelBase(tol=0.5)
     mod.no_improvement_count = 5
@@ -155,4 +153,4 @@ def test_parameter_setting(param, expected):
 def test_no_setting_of_missing_param():
     mod = TorchModelBase(amsgrad=0.5)
     with pytest.raises(ValueError):
-        mod.set_params(**{'NON_EXISTENT_PARAM': False})
+        mod.set_params(**{"NON_EXISTENT_PARAM": False})

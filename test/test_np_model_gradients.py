@@ -17,55 +17,53 @@ class GradientCheckError(Exception):
     """Raised if a gradient check fails."""
 
 
-@pytest.mark.parametrize("hidden_activation, d_hidden_activation", [
-    [np.tanh, utils.d_tanh],
-    [utils.relu, utils.d_relu]
-])
+@pytest.mark.parametrize(
+    "hidden_activation, d_hidden_activation",
+    [[np.tanh, utils.d_tanh], [utils.relu, utils.d_relu]],
+)
 def test_np_shallow_neural_classifier_gradients(hidden_activation, d_hidden_activation):
     model = ShallowNeuralClassifier(
         max_iter=10,
         hidden_activation=hidden_activation,
-        d_hidden_activation=d_hidden_activation)
+        d_hidden_activation=d_hidden_activation,
+    )
     # A tiny dataset so that we can run `fit` and set all the model
     # parameters:
     X = utils.randmatrix(5, 2)
-    y = np.random.choice((0,1), 5)
+    y = np.random.choice((0, 1), 5)
     model.fit(X, y)
     # Use the first example for the check:
     ex = X[0]
     label = model._onehot_encode([y[0]])[0]
     # Forward and backward to get the gradients:
     hidden, pred = model.forward_propagation(ex)
-    d_W_hy, d_b_hy, d_W_xh, d_b_xh = model.backward_propagation(
-        hidden, pred, ex, label)
+    d_W_hy, d_b_hy, d_W_xh, d_b_xh = model.backward_propagation(hidden, pred, ex, label)
     # Model parameters to check:
     param_pairs = (
-        ('W_hy', d_W_hy),
-        ('b_hy', d_b_hy),
-        ('W_xh', d_W_xh),
-        ('b_xh', d_b_xh)
+        ("W_hy", d_W_hy),
+        ("b_hy", d_b_hy),
+        ("W_xh", d_W_xh),
+        ("b_xh", d_b_xh),
     )
     gradient_check(param_pairs, model, ex, label)
 
 
-@pytest.mark.parametrize("hidden_activation, d_hidden_activation", [
-    [np.tanh, utils.d_tanh],
-    [utils.relu, utils.d_relu]
-])
+@pytest.mark.parametrize(
+    "hidden_activation, d_hidden_activation",
+    [[np.tanh, utils.d_tanh], [utils.relu, utils.d_relu]],
+)
 def test_np_rnn_classifier(hidden_activation, d_hidden_activation):
     # A tiny dataset so that we can run `fit` and set all the model
     # parameters:
-    vocab = ['a', 'b', '$UNK']
-    data = [
-        [list('ab'), 'good'],
-        [list('aab'), 'good'],
-        [list('abb'), 'good']]
+    vocab = ["a", "b", "$UNK"]
+    data = [[list("ab"), "good"], [list("aab"), "good"], [list("abb"), "good"]]
     model = RNNClassifier(
         vocab,
         max_iter=10,
         hidden_dim=2,
         hidden_activation=hidden_activation,
-        d_hidden_activation=d_hidden_activation)
+        d_hidden_activation=d_hidden_activation,
+    )
     X, y = zip(*data)
     model.fit(X, y)
     # Use the first example for the check:
@@ -73,28 +71,23 @@ def test_np_rnn_classifier(hidden_activation, d_hidden_activation):
     label = model._onehot_encode([y[0]])[0]
     # Forward and backward to get the gradients:
     hidden, pred = model.forward_propagation(ex)
-    d_W_hy, d_b, d_W_hh, d_W_xh = model.backward_propagation(
-        hidden, pred, ex, label)
+    d_W_hy, d_b, d_W_hh, d_W_xh = model.backward_propagation(hidden, pred, ex, label)
     # Model parameters to check:
-    param_pairs = (
-        ('W_xh', d_W_xh),
-        ('W_hh', d_W_hh),
-        ('W_hy', d_W_hy),
-        ('b', d_b)
-    )
+    param_pairs = (("W_xh", d_W_xh), ("W_hh", d_W_hh), ("W_hy", d_W_hy), ("b", d_b))
     gradient_check(param_pairs, model, ex, label)
 
 
-@pytest.mark.parametrize("hidden_activation, d_hidden_activation", [
-    [np.tanh, utils.d_tanh],
-    [utils.relu, utils.d_relu]
-])
+@pytest.mark.parametrize(
+    "hidden_activation, d_hidden_activation",
+    [[np.tanh, utils.d_tanh], [utils.relu, utils.d_relu]],
+)
 def test_np_autoencoder(hidden_activation, d_hidden_activation):
     model = Autoencoder(
         max_iter=10,
         hidden_dim=2,
         hidden_activation=hidden_activation,
-        d_hidden_activation=d_hidden_activation)
+        d_hidden_activation=d_hidden_activation,
+    )
     # A tiny dataset so that we can run `fit` and set all the model
     # parameters:
     X = utils.randmatrix(5, 5)
@@ -104,14 +97,13 @@ def test_np_autoencoder(hidden_activation, d_hidden_activation):
     label = X[0]
     # Forward and backward to get the gradients:
     hidden, pred = model.forward_propagation(ex)
-    d_W_hy, d_b_hy, d_W_xh, d_b_xh = model.backward_propagation(
-        hidden, pred, ex, label)
+    d_W_hy, d_b_hy, d_W_xh, d_b_xh = model.backward_propagation(hidden, pred, ex, label)
     # Model parameters to check:
     param_pairs = (
-        ('W_hy', d_W_hy),
-        ('b_hy', d_b_hy),
-        ('W_xh', d_W_xh),
-        ('b_xh', d_b_xh)
+        ("W_hy", d_W_hy),
+        ("b_hy", d_b_hy),
+        ("W_xh", d_W_xh),
+        ("b_xh", d_b_xh),
     )
     gradient_check(param_pairs, model, ex, label)
 
@@ -153,7 +145,7 @@ def gradient_check(param_pairs, model, ex, label, epsilon=0.0001, threshold=0.00
         params = getattr(model, param_name)
         # This iterator will allow is to cycle over all the values for
         # arrays of any dimension:
-        iterator = np.nditer(params, flags=['multi_index'], op_flags=['readwrite'])
+        iterator = np.nditer(params, flags=["multi_index"], op_flags=["readwrite"])
         while not iterator.finished:
             idx = iterator.multi_index
             actual = params[idx]
@@ -172,5 +164,7 @@ def gradient_check(param_pairs, model, ex, label, epsilon=0.0001, threshold=0.00
             if err >= threshold:
                 raise GradientCheckError(
                     "Gradient check error for {} at {}: error is {}".format(
-                        param_name, idx, err))
+                        param_name, idx, err
+                    )
+                )
             iterator.iternext()
