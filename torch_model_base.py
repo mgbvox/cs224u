@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import utils
 
+from tqdm import tqdm
+
 __author__ = "Christopher Potts"
 __version__ = "CS224u, Stanford, Spring 2023"
 
@@ -151,8 +153,9 @@ class TorchModelBase:
         if device is None:
             if torch.cuda.is_available():
                 device = "cuda"
-            elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
-                device = "mps"
+            # todo: bring this back, figure out memory issues
+            # elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
+            #     device = "mps"
             else:
                 device = "cpu"
         self.device = torch.device(device)
@@ -349,13 +352,11 @@ class TorchModelBase:
         # Make sure the model is where we want it:
         self.model.to(self.device)
         print(f"Using device: {self.device}")
-        print("Compiling model...")
-        self.model = torch.compile(self.model)
+        # print("Compiling model...")
+        # self.model = torch.compile(self.model)
 
         self.model.train()
         self.optimizer.zero_grad()
-
-        from tqdm import tqdm
 
         print("Begin fitting model")
         for iteration in tqdm(range(1, self.max_iter + 1)):
