@@ -156,6 +156,8 @@ class BertClassifier(TorchShallowNeuralClassifier):
 
 
 def main():
+    print("Starting HW Sentiment Training...")
+    print("Build model")
     bert_finetune = BertClassifier(
         weights_name="prajjwal1/bert-mini",
         hidden_activation=nn.ReLU(),
@@ -166,8 +168,10 @@ def main():
         n_iter_no_change=5,
     )  # params.
 
+    print("Load dataset")
     dynasent_r1 = load_dataset("dynabench/dynasent", "dynabench.dynasent.r1.all")
 
+    print("Fitting model")
     _ = bert_finetune.fit(
         dynasent_r1["train"]["sentence"], dynasent_r1["train"]["gold_label"]
     )
