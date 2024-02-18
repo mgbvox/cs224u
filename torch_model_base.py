@@ -28,7 +28,7 @@ class TorchModelBase:
         tol=1e-5,
         device=None,
         display_progress=True,
-        **optimizer_kwargs
+        **optimizer_kwargs,
     ):
         """
         Base class for all the PyTorch-based models.
@@ -257,7 +257,7 @@ class TorchModelBase:
             self.model.parameters(),
             lr=self.eta,
             weight_decay=self.l2_strength,
-            **self.optimizer_kwargs
+            **self.optimizer_kwargs,
         )
 
     def fit(self, *args):
@@ -348,15 +348,21 @@ class TorchModelBase:
 
         # Make sure the model is where we want it:
         self.model.to(self.device)
+        print(f"Using device: {self.device}")
 
         self.model.train()
         self.optimizer.zero_grad()
 
-        for iteration in range(1, self.max_iter + 1):
+        from tqdm import tqdm
+
+        print("Begin fitting model")
+        for iteration in tqdm(range(1, self.max_iter + 1)):
 
             epoch_error = 0.0
 
-            for batch_num, batch in enumerate(dataloader, start=1):
+            for batch_num, batch in tqdm(
+                enumerate(dataloader, start=1), total=len(dataloader)
+            ):
 
                 batch = [x.to(self.device) for x in batch]
 
