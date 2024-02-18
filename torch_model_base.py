@@ -349,6 +349,7 @@ class TorchModelBase:
         # Make sure the model is where we want it:
         self.model.to(self.device)
         print(f"Using device: {self.device}")
+        self.model = torch.compile(self.model)
 
         self.model.train()
         self.optimizer.zero_grad()
