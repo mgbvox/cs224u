@@ -491,7 +491,7 @@ class ExpertMixture(TorchShallowNeuralClassifier):
 
         now = datetime.now().strftime("DATE_%Y_%m_%d-TIME_%H_%M")
         end = (
-            "TEST" if test else f"{now}-SCORE_{self.best_score}-LOSS_{self.best_error}"
+            "TEST" if test else f"{now}-SCORE_{self.best_score}"
         )
         out = BAKEOFF_ROOT / f"bakeoff_submission-{end}.csv"
         self.bakeoff_df.to_csv(out)
@@ -505,14 +505,12 @@ def checkpoint_model(net: ExpertMixture):
         raise ValueError(f"Model not yet initialized for {name}!")
 
     score = net.best_score if net.best_score else 0
-    loss = min(net.best_error, 99999) if net.best_error else 99999
-    path = CHECKPOINT_ROOT / f"chkpt-{name}-{now}-SCORE_{score}-LOSS_{loss}.ckpt"
+    path = CHECKPOINT_ROOT / f"chkpt-{name}-{now}-SCORE_{score}.ckpt"
     print(f"Checkpointing model for:\n\t{name}\nto:\n\t{path}")
     torch.save(
         {
             "model_state_dict": net.model.state_dict(),
             "optimizer_state_dict": net.optimizer.state_dict(),
-            "best_error": loss,
             "best_score": score,
         },
         path,
