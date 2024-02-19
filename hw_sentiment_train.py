@@ -10,14 +10,18 @@ import copy
 import dataclasses
 from datetime import datetime, time
 from pathlib import Path
-from typing import List, Type, Set, Dict
+from typing import List, Type, Set, Dict, Tuple
 
+import numpy as np
 import torch
-from datasets import DatasetDict
+from datasets import DatasetDict, Dataset
 from datasets import load_dataset
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import os
+import wget
+import pandas as pd
 
 try:
     from torch.utils.tensorboard import SummaryWriter
@@ -46,6 +50,9 @@ if HAS_WRITER:
 
 CHECKPOINT_ROOT = Path(f"./checkpoints/{START_DATETIME}")
 CHECKPOINT_ROOT.mkdir(exist_ok=True, parents=True)
+
+BAKEOFF_ROOT = Path(f"./bakeoff/{START_DATETIME}")
+BAKEOFF_ROOT.mkdir(exist_ok=True, parents=True)
 
 
 @dataclasses.dataclass
@@ -163,18 +170,24 @@ class ExpertMixture(TorchShallowNeuralClassifier):
         config: ExpertConfig | None = None,
         **kwargs,
     ):
+        self.model_class = ExpertLayerWithArbiter
+
         self.experts = experts or DEFAULT_EXPERTS
         self.config = config or ExpertConfig()
 
         # set by .build_dataset()
-        self.classes_: Set[str] | None = None
+        self.classes_: list[str] | None = None
         self.n_classes_: int | None = None
         self.class2index: dict[str, int] | None = None
 
+        # set by .setup_bakeoff()
+        self.bakeoff_df: pd.DataFrame | None = None
+        self.bakeoff_loader: DataLoader | None = None
+
         super().__init__(**kwargs)
 
-    def build_graph(self):
-        return ExpertLayerWithArbiter(self.experts, self.config)
+    def build_graph(self) -> ExpertLayerWithArbiter:
+        return self.model_class(self.experts, self.config)
 
     def transform_for_experts(self, batch: Dict[str, list[str]]):
         encoded = []
@@ -201,11 +214,19 @@ class ExpertMixture(TorchShallowNeuralClassifier):
             y_batch = [self.class2index[label] for label in y_batch]
             y_batch = torch.tensor(y_batch)
 
-        return {
+        to_return = {
             "ids": torch.cat(encoded, dim=1),
             "masks": torch.cat(masks, dim=1),
             "labels": y_batch,
         }
+        if not y_batch:
+            _ = to_return.pop("labels")
+        return to_return
+
+    def build_dataset_from_csv(self, csv: str):
+        ds = Dataset.from_csv(csv)
+        ds.set_transform(self.transform_for_experts)
+        return ds
 
     def build_dataset(self, X: DatasetDict, subset: str = "train", *args, **kwargs):
         x_subset = X[subset]
@@ -220,15 +241,63 @@ class ExpertMixture(TorchShallowNeuralClassifier):
 
         return x_subset
 
-    def fit(self, dataset: DatasetDict, *args, **kwargs):
+    def initialize(self, checkpoint_path: Path | None = None):
+        """
+        Adapted to allow loading from checkpoints
+        """
+        self.model = self.build_graph()
+        # This device move has to happen before the optimizer is built:
+        # https://pytorch.org/docs/master/optim.html#constructing-it
+        self.optimizer = self.build_optimizer()
+        if checkpoint_path:
+            print(f"Initializing from checkpoint {checkpoint_path}")
+        data = torch.load(checkpoint_path) if checkpoint_path else dict()
+        self.best_parameters = data.get("model_state_dict")
+        if self.best_parameters:
+            self.model.load_state_dict(self.best_parameters)
+        optim_state = data.get("optimizer_state_dict")
+        if optim_state:
+            self.optimizer.load_state_dict(optim_state)
+        self.best_error = data.get("best_error", np.inf)
+        self.best_score = data.get("best_score", -np.inf)
+
+        self.errors = []
+        self.validation_scores = []
+        self.no_improvement_count = 0
+
+        print(
+            f"Model initialized; best_err: {self.best_error}; best_score: {self.best_score}"
+        )
+
+    def setup_bakeoff(self):
+        # for use in submitting bakeoff
+        if not os.path.exists(
+            os.path.join("data", "sentiment", "cs224u-sentiment-test-unlabeled.csv")
+        ):
+            os.makedirs(os.path.join("data", "sentiment"), exist_ok=True)
+            wget.download(
+                "https://web.stanford.edu/class/cs224u/data/cs224u-sentiment-test-unlabeled.csv",
+                out="data/sentiment/",
+            )
+
+        csv = os.path.join("data", "sentiment", "cs224u-sentiment-test-unlabeled.csv")
+        self.bakeoff_df = pd.read_csv(csv)
+        bakeoff_ds = self.build_dataset_from_csv(csv)
+        self.bakeoff_loader = self._build_dataloader(bakeoff_ds, shuffle=False)
+
+    def fit(
+        self,
+        dataset: DatasetDict,
+        checkpoint_path: Path | str | None = None,
+        *args,
+        **kwargs,
+    ):
         # Set up parameters needed to use the model. This is a separate
         # function to support using pretrained models for prediction,
         # where it might not be desirable to call `fit`.
-        self.initialize()
-
-        # TODO: delete this!
-        # self.device = "cpu" if self.device == "mps" else self.device
-
+        self.initialize(checkpoint_path)
+        # mps running out of memory (big models); do this on cpu for now
+        self.device = "cpu" if str(self.device) == "mps" else self.device
         # Make sure the model is where we want it:
         self.model.to(self.device)
         print(f"Using device: {self.device}")
@@ -240,6 +309,10 @@ class ExpertMixture(TorchShallowNeuralClassifier):
         if self.early_stopping:
             dev = self.build_dataset(dataset, "validation")
             dev = self._build_dataloader(dev)
+
+        self.setup_bakeoff()
+        # do a test prediction of the benchmark data to ensure we're good to infer later
+        self.bakeoff(test=True)
 
         self.model.train()
         self.optimizer.zero_grad()
@@ -324,17 +397,46 @@ class ExpertMixture(TorchShallowNeuralClassifier):
 
         return self
 
-    def _predict(self, dataloader: DataLoader):
+    def _predict_batch(self, batch: dict[str, torch.Tensor]) -> np.ndarray:
+        did_toggle = False
+        if self.model.training:
+            self.model.eval()
+
+        if torch.is_grad_enabled():
+            # disable grad for preds!
+            with torch.no_grad():
+                x_batch = batch["ids"].to(self.device), batch["masks"].to(self.device)
+                out_batch = self.model(*x_batch)
+        else:
+            # grad already disabled, no need to call again
+            x_batch = batch["ids"].to(self.device), batch["masks"].to(self.device)
+            out_batch = self.model(*x_batch)
+
+        if not self.model.training and did_toggle:
+            self.model.train()
+
+        return out_batch
+
+    def _predict(
+        self, dataloader: DataLoader, stop_after: int | None = None
+    ) -> Tuple[torch.Tensor, torch.Tensor | None]:
         self.model.eval()
-        preds = []
-        y = []
+        preds: list[torch.Tensor] = []
+        y: list[torch.Tensor] = []
         with torch.no_grad():
             for idx, batch in tqdm(enumerate(dataloader), total=len(dataloader)):
-                x_batch = batch["ids"].to(self.device), batch["masks"].to(self.device)
-                y_batch = batch["labels"].to(self.device)
-                preds.append(self.model(*x_batch))
-                y.append(y_batch)
-        return torch.cat(preds, axis=0), torch.cat(y, axis=0)
+                assert isinstance(batch, dict)
+                out_batch = self._predict_batch(batch)
+                if "labels" in batch.keys():
+                    y_batch = batch["labels"]
+                    y.append(torch.tensor(y_batch))
+                preds.append(torch.tensor(out_batch))
+                if stop_after is not None and idx > stop_after:
+                    break
+
+        self.model.train()
+
+        return torch.cat(preds, dim=0), (torch.cat(y, dim=0) if y else None)
 
     def _update_no_improvement_count_early_stopping(
         self, dev_loader: DataLoader, *args
@@ -346,9 +448,7 @@ class ExpertMixture(TorchShallowNeuralClassifier):
         `self.best_score`, `self.best_parameters` as appropriate.
 
         """
-
         preds, y = self._predict(dev_loader)
-        y = y.cpu().detach().numpy()
         probs = torch.softmax(preds, dim=1).cpu().numpy()
         preds = probs.argmax(axis=1)
 
@@ -366,10 +466,28 @@ class ExpertMixture(TorchShallowNeuralClassifier):
             self.best_score = score
             # write weights out to storage for loading later!
             self.checkpoint()
-        self.model.train()
 
     def checkpoint(self):
         checkpoint_model(net=self)
+        # update bakeoff submission
+        self.bakeoff()
+
+    def bakeoff(self, test=False):
+        preds, _ = self._predict(self.bakeoff_loader, stop_after=10 if test else None)
+        probs = torch.softmax(torch.tensor(preds), dim=1).cpu().numpy()
+        preds = probs.argmax(axis=1)
+        labels = [self.classes_[i] for i in preds]
+        if len(labels) != len(self.bakeoff_df):
+            labels += ["None" for _ in range(len(self.bakeoff_df) - len(labels))]
+        self.bakeoff_df["prediction"] = labels
+
+        now = datetime.now().strftime("DATE_%Y_%m_%d-TIME_%H_%M")
+        end = (
+            "TEST" if test else f"{now}-SCORE_{self.best_score}-LOSS_{self.best_error}"
+        )
+        out = BAKEOFF_ROOT / f"bakeoff_submission-{end}.csv"
+        self.bakeoff_df.to_csv(out)
+        print(f"Wrote bakeoff submission to {out}")
 
 
 def checkpoint_model(net: ExpertMixture):
@@ -386,8 +504,8 @@ def checkpoint_model(net: ExpertMixture):
         {
             "model_state_dict": net.model.state_dict(),
             "optimizer_state_dict": net.optimizer.state_dict(),
-            "val_loss": loss,
-            "score": score,
+            "best_error": loss,
+            "best_score": score,
         },
         path,
     )
