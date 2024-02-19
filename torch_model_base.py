@@ -153,9 +153,8 @@ class TorchModelBase:
         if device is None:
             if torch.cuda.is_available():
                 device = "cuda"
-            # todo: bring this back, figure out memory issues
-            # elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
-            #     device = "mps"
+            elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
+                device = "mps"
             else:
                 device = "cpu"
         self.device = torch.device(device)

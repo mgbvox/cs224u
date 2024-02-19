@@ -230,8 +230,9 @@ class ExpertMixture(TorchShallowNeuralClassifier):
                 x_batch = batch["ids"], batch["masks"]
                 y_batch = batch["labels"]
 
+                inputs = [x.to(self.device) for x in x_batch]
                 # todo: fix mps memory issue
-                batch_preds = self.model(*[x.to(self.device) for x in x_batch])
+                batch_preds = self.model(*inputs)
 
                 err = self.loss(batch_preds, y_batch)
 
