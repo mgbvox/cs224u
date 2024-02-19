@@ -320,9 +320,6 @@ class ExpertMixture(TorchShallowNeuralClassifier):
         self.model.train()
         self.optimizer.zero_grad()
 
-        print("Initial model checkpoint (pre-training)!")
-        self.checkpoint()
-
         print("Begin fitting model")
         for iteration in range(1, self.max_iter + 1):
 
