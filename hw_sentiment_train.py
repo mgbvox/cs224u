@@ -332,6 +332,10 @@ class ExpertMixture(TorchShallowNeuralClassifier):
                 enumerate(dataloader, start=1), total=len(dataloader)
             ):
 
+                # TODO: delete
+                if batch_num > 10:
+                    break
+
                 x_batch = batch["ids"].to(self.device), batch["masks"].to(self.device)
                 y_batch = batch["labels"].to(self.device)
 
