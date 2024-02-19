@@ -332,10 +332,6 @@ class ExpertMixture(TorchShallowNeuralClassifier):
                 enumerate(dataloader, start=1), total=len(dataloader)
             ):
 
-                # TODO: delete
-                if batch_num > 10:
-                    break
-
                 x_batch = batch["ids"].to(self.device), batch["masks"].to(self.device)
                 y_batch = batch["labels"].to(self.device)
 
@@ -475,7 +471,10 @@ class ExpertMixture(TorchShallowNeuralClassifier):
             self.checkpoint()
 
     def checkpoint(self):
-        checkpoint_model(net=self)
+        try:
+            checkpoint_model(net=self)
+        except:
+            pass
         # update bakeoff submission
         self.bakeoff()
 
