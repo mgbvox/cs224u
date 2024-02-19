@@ -219,7 +219,7 @@ class ExpertMixture(TorchShallowNeuralClassifier):
             "masks": torch.cat(masks, dim=1),
             "labels": y_batch,
         }
-        if not y_batch:
+        if y_batch:
             _ = to_return.pop("labels")
         return to_return
 
