@@ -214,13 +214,16 @@ class ExpertMixture(TorchShallowNeuralClassifier):
             y_batch = [self.class2index[label] for label in y_batch]
             y_batch = torch.tensor(y_batch)
 
-        to_return = {
-            "ids": torch.cat(encoded, dim=1),
-            "masks": torch.cat(masks, dim=1),
-            "labels": y_batch,
-        }
-        if y_batch:
-            _ = to_return.pop("labels")
+            to_return = {
+                "ids": torch.cat(encoded, dim=1),
+                "masks": torch.cat(masks, dim=1),
+                "labels": y_batch,
+            }
+        else:
+            to_return = {
+                "ids": torch.cat(encoded, dim=1),
+                "masks": torch.cat(masks, dim=1),
+            }
         return to_return
 
     def build_dataset_from_csv(self, csv: str):
