@@ -473,6 +473,7 @@ class ExpertMixture(TorchShallowNeuralClassifier):
         self.bakeoff()
 
     def bakeoff(self, test=False):
+        print(f"Bakeoff mode; test = {test}")
         preds, _ = self._predict(self.bakeoff_loader, stop_after=10 if test else None)
         probs = torch.softmax(torch.tensor(preds), dim=1).cpu().numpy()
         preds = probs.argmax(axis=1)
