@@ -1,13 +1,30 @@
+# PLEASE MAKE SURE TO INCLUDE THE FOLLOWING BETWEEN THE START AND STOP COMMENTS:
+#   1) Textual description of your system.
+#   2) The code for your original system.
+# PLEASE MAKE SURE NOT TO DELETE OR EDIT THE START AND STOP COMMENTS
+
+# START COMMENT: Enter your system description in this cell.
 from __future__ import annotations
 
+import copy
 import dataclasses
+from datetime import datetime
 from typing import List, Type, Set, Dict
 
 import torch
 from datasets import DatasetDict
 from datasets import load_dataset
 from torch import nn
+from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+try:
+    from torch.utils.tensorboard import SummaryWriter
+    HAS_WRITER = True
+except:
+    HAS_WRITER = False
+
+
 from transformers import AutoTokenizer, AutoModel, BatchEncoding
 
 import utils
@@ -20,6 +37,11 @@ DEFAULT_EXPERTS = [
 ]
 
 EXPERT_SEP = -1
+
+
+if HAS_WRITER:
+    LOG = SummaryWriter(f"./runs/{datetime.now().strftime('%Y_%m_%d-%H_%M')}")
+
 
 
 @dataclasses.dataclass
@@ -52,8 +74,6 @@ class Expert(nn.Module):
             self.hidden_activation,
             nn.Linear(self.hidden_dim, self.config.n_classes),
         )
-
-        self.train()
 
     def encode_batch(self, examples: List[str]) -> torch.Tensor:
         toks = self.tok.batch_encode_plus(
@@ -173,9 +193,11 @@ class ExpertMixture(TorchShallowNeuralClassifier):
             encoded.append(ids)
             masks.append(mask)
 
-        y_batch = batch["gold_label"]
-        y_batch = [self.class2index[label] for label in y_batch]
-        y_batch = torch.tensor(y_batch)
+        y_batch = None
+        if "gold_label" in batch:
+            y_batch = batch["gold_label"]
+            y_batch = [self.class2index[label] for label in y_batch]
+            y_batch = torch.tensor(y_batch)
 
         return {
             "ids": torch.cat(encoded, dim=1),
@@ -183,43 +205,45 @@ class ExpertMixture(TorchShallowNeuralClassifier):
             "labels": y_batch,
         }
 
-    def build_dataset(self, X: DatasetDict, *args, **kwargs):
-        train = X["train"]
-        y = train["gold_label"]
-        self.classes_ = sorted(set(y))
-        self.n_classes_ = len(self.classes_)
-        self.class2index = dict(zip(self.classes_, range(self.n_classes_)))
+    def build_dataset(self, X: DatasetDict, subset: str = "train", *args, **kwargs):
+        x_subset = X[subset]
 
-        train.set_transform(self.transform_for_experts)
+        if not self.classes_:
+            y = x_subset["gold_label"]
+            self.classes_ = sorted(set(y))
+            self.n_classes_ = len(self.classes_)
+            self.class2index = dict(zip(self.classes_, range(self.n_classes_)))
 
-        return train
+        x_subset.set_transform(self.transform_for_experts)
+
+        return x_subset
 
     def fit(self, dataset: DatasetDict, *args, **kwargs):
-        if self.early_stopping:
-            args, dev = self._build_validation_split(
-                dataset["train"], validation_fraction=self.validation_fraction
-            )
-
-        # Dataset:
-        dataset = self.build_dataset(dataset)
-        dataloader = self._build_dataloader(dataset, shuffle=self.shuffle_train)
-
         # Set up parameters needed to use the model. This is a separate
         # function to support using pretrained models for prediction,
         # where it might not be desirable to call `fit`.
         self.initialize()
 
+        # TODO: delete this!
+        # self.device = "cpu" if self.device == "mps" else self.device
+
         # Make sure the model is where we want it:
         self.model.to(self.device)
         print(f"Using device: {self.device}")
-        # print("Compiling model...")
-        # self.model = torch.compile(self.model)
+
+        # Dataset:
+        train = self.build_dataset(dataset, "train")
+        dataloader = self._build_dataloader(train, shuffle=self.shuffle_train)
+        dev = []
+        if self.early_stopping:
+            dev = self.build_dataset(dataset, "validation")
+            dev = self._build_dataloader(dev)
 
         self.model.train()
         self.optimizer.zero_grad()
 
         print("Begin fitting model")
-        for iteration in tqdm(range(1, self.max_iter + 1)):
+        for iteration in range(1, self.max_iter + 1):
 
             epoch_error = 0.0
 
@@ -227,12 +251,10 @@ class ExpertMixture(TorchShallowNeuralClassifier):
                 enumerate(dataloader, start=1), total=len(dataloader)
             ):
 
-                x_batch = batch["ids"], batch["masks"]
-                y_batch = batch["labels"]
+                x_batch = batch["ids"].to(self.device), batch["masks"].to(self.device)
+                y_batch = batch["labels"].to(self.device)
 
-                inputs = [x.to(self.device) for x in x_batch]
-                # todo: fix mps memory issue
-                batch_preds = self.model(*inputs)
+                batch_preds = self.model(*x_batch)
 
                 err = self.loss(batch_preds, y_batch)
 
@@ -243,6 +265,8 @@ class ExpertMixture(TorchShallowNeuralClassifier):
                     err /= self.gradient_accumulation_steps
 
                 err.backward()
+                if HAS_WRITER:
+                    LOG.add_scalar("Loss/train", err.item(), batch_num)
 
                 epoch_error += err.item()
 
@@ -259,8 +283,8 @@ class ExpertMixture(TorchShallowNeuralClassifier):
 
             # Stopping criteria:
 
-            if self.early_stopping:
-                self._update_no_improvement_count_early_stopping(*dev)
+            if self.early_stopping and dev:
+                self._update_no_improvement_count_early_stopping(dev)
                 if self.no_improvement_count > self.n_iter_no_change:
                     utils.progress_bar(
                         "Stopping after epoch {}. Validation score did "
@@ -295,16 +319,57 @@ class ExpertMixture(TorchShallowNeuralClassifier):
 
         return self
 
+    def _predict(self, dataloader: DataLoader):
+        self.model.eval()
+        preds = []
+        y = []
+        with torch.no_grad():
+            for idx, batch in tqdm(enumerate(dataloader), total=len(dataloader)):
+                x_batch = batch["ids"].to(self.device), batch["masks"].to(self.device)
+                y_batch = batch["labels"].to(self.device)
+                preds.append(self.model(*x_batch))
+                y.append(y_batch)
+        return torch.cat(preds, axis=0), torch.cat(y, axis=0)
 
-if __name__ == "__main__":
-    em = ExpertMixture(
-        eta=0.00005,  # Low learning rate for effective fine-tuning.
-        batch_size=8,  # Small batches to avoid memory overload.
-        gradient_accumulation_steps=4,  # Increase the effective batch size to 32.
-        # todo: adapt early stopping / validation to use dataloaders
-        #   https://stackoverflow.com/questions/50544730/how-do-i-split-a-custom-dataset-into-training-and-test-datasets/50544887#50544887
-        # early_stopping=True,  # Early-stopping
-        n_iter_no_change=5,
-    )
-    dynasent_r1 = load_dataset("dynabench/dynasent", "dynabench.dynasent.r1.all")
-    em.fit(dynasent_r1)
+    def _update_no_improvement_count_early_stopping(
+        self, dev_loader: DataLoader, *args
+    ):
+        """
+        Internal method used by `fit` to control early stopping.
+        The method uses `self.score(*dev)` for scoring and updates
+        `self.validation_scores`, `self.no_improvement_count`,
+        `self.best_score`, `self.best_parameters` as appropriate.
+
+        """
+
+        preds, y = self._predict(dev_loader)
+        y = y.cpu().detach().numpy()
+        probs = torch.softmax(preds, dim=1).cpu().numpy()
+        preds = probs.argmax(axis=1)
+
+        score = utils.safe_macro_f1(y, preds)
+        self.validation_scores.append(score)
+        # If the score isn't at least `self.tol` better, increment:
+        if score < (self.best_score + self.tol):
+            self.no_improvement_count += 1
+        else:
+            self.no_improvement_count = 0
+        # If the current score is numerically better than all previous
+        # scores, update the best parameters:
+        if score > self.best_score:
+            self.best_parameters = copy.deepcopy(self.model.state_dict())
+            self.best_score = score
+        self.model.train()
+
+
+em = ExpertMixture(
+    eta=0.00005,  # Low learning rate for effective fine-tuning.
+    batch_size=8,  # Small batches to avoid memory overload.
+    gradient_accumulation_steps=4,  # Increase the effective batch size to 32.
+    early_stopping=True,  # Early-stopping
+    n_iter_no_change=5,
+)
+dynasent_r1 = load_dataset("dynabench/dynasent", "dynabench.dynasent.r1.all")
+em.fit(dynasent_r1)
+
+# STOP COMMENT: Please do not remove this comment.
