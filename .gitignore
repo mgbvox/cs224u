@@ -1,3 +1,4 @@
+.disk_cache/
 .env
 **/runs/
 bakeoff/
