@@ -128,14 +128,6 @@ class WebAnswerSignature(dspy.Signature):
     )
 
 
-# REMOVED - dspy.Assert/Suggest not playing nice
-# def validate_query_distinction_local(previous_queries: list[str], query: str):
-#     """check if query is distinct from previous queries"""
-#     if not previous_queries:
-#         return True
-#     if dspy.evaluate.answer_exact_match_str(query, previous_queries, frac=0.8):
-#         return False
-#     return True
 
 
 class WebRagMultiHop(dspy.Module):
