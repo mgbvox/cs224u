@@ -61,24 +61,21 @@ class RNNClassifier(NNModelBase):
     is set to the dimensionality of the input representations.
 
     """
-    def __init__(self,
-            vocab,
-            embedding=None,
-            use_embedding=True,
-            embed_dim=50,
-            **kwargs):
+
+    def __init__(
+        self, vocab, embedding=None, use_embedding=True, embed_dim=50, **kwargs
+    ):
         self.vocab = vocab
         self.vocab_lookup = dict(zip(self.vocab, range(len(self.vocab))))
         self.use_embedding = use_embedding
         self._embed_dim = embed_dim
         if self.use_embedding:
             if embedding is None:
-                embedding = self._define_embedding_matrix(
-                    len(self.vocab), embed_dim)
+                embedding = self._define_embedding_matrix(len(self.vocab), embed_dim)
             self.embedding = embedding
             self._embed_dim = self.embedding.shape[1]
         super().__init__(**kwargs)
-        self.params += ['embedding', 'embed_dim']
+        self.params += ["embedding", "embed_dim"]
 
     @property
     def embed_dim(self):
@@ -87,8 +84,7 @@ class RNNClassifier(NNModelBase):
     @embed_dim.setter
     def embed_dim(self, value):
         self._embed_dim = value
-        self.embedding = self._define_embedding_matrix(
-            len(self.vocab), value)
+        self.embedding = self._define_embedding_matrix(len(self.vocab), value)
 
     def fit(self, X, y):
         if not self.use_embedding:
@@ -142,14 +138,15 @@ class RNNClassifier(NNModelBase):
             The vector of predictions.
 
         """
-        h = np.zeros((len(seq)+1, self.hidden_dim))
-        for t in range(1, len(seq)+1):
+        h = np.zeros((len(seq) + 1, self.hidden_dim))
+        for t in range(1, len(seq) + 1):
             if self.use_embedding:
-                word_rep = self.get_word_rep(seq[t-1])
+                word_rep = self.get_word_rep(seq[t - 1])
             else:
-                word_rep = seq[t-1]
+                word_rep = seq[t - 1]
             h[t] = self.hidden_activation(
-                word_rep.dot(self.W_xh) + h[t-1].dot(self.W_hh))
+                word_rep.dot(self.W_xh) + h[t - 1].dot(self.W_hh)
+            )
         y = softmax(h[-1].dot(self.W_hy) + self.b)
         return h, y
 
@@ -187,13 +184,13 @@ class RNNClassifier(NNModelBase):
         d_W_xh = np.zeros(self.W_xh.shape)
         # Back-prop through time; the +1 is because the 0th
         # hidden state is the all-0s initial state.
-        num_steps = len(seq)+1
+        num_steps = len(seq) + 1
         for t in reversed(range(1, num_steps)):
             d_W_hh += np.outer(h[t], h_err)
             if self.use_embedding:
-                word_rep = self.get_word_rep(seq[t-1])
+                word_rep = self.get_word_rep(seq[t - 1])
             else:
-                 word_rep = seq[t-1]
+                word_rep = seq[t - 1]
             d_W_xh += np.outer(word_rep, h_err)
             h_err = h_err.dot(self.W_hh.T) * self.d_hidden_activation(h[t])
         return (d_W_hy, d_b, d_W_hh, d_W_xh)
@@ -210,33 +207,34 @@ class RNNClassifier(NNModelBase):
         return safe_macro_f1(y, preds)
 
 
-
 def simple_example():
     from sklearn.metrics import accuracy_score
     import utils
 
     utils.fix_random_seeds()
 
-    vocab = ['a', 'b', '$UNK']
+    vocab = ["a", "b", "$UNK"]
 
     # No b before an a
     train = [
-        [list('ab'), 'good'],
-        [list('aab'), 'good'],
-        [list('abb'), 'good'],
-        [list('aabb'), 'good'],
-        [list('ba'), 'bad'],
-        [list('baa'), 'bad'],
-        [list('bba'), 'bad'],
-        [list('bbaa'), 'bad'],
-        [list('aba'), 'bad']]
+        [list("ab"), "good"],
+        [list("aab"), "good"],
+        [list("abb"), "good"],
+        [list("aabb"), "good"],
+        [list("ba"), "bad"],
+        [list("baa"), "bad"],
+        [list("bba"), "bad"],
+        [list("bbaa"), "bad"],
+        [list("aba"), "bad"],
+    ]
 
     test = [
-        [list('baaa'), 'bad'],
-        [list('abaa'), 'bad'],
-        [list('bbaa'), 'bad'],
-        [list('aaab'), 'good'],
-        [list('aaabb'), 'good']]
+        [list("baaa"), "bad"],
+        [list("abaa"), "bad"],
+        [list("bbaa"), "bad"],
+        [list("aaab"), "good"],
+        [list("aaabb"), "good"],
+    ]
 
     X_train, y_train = zip(*train)
     X_test, y_test = zip(*test)
@@ -253,11 +251,14 @@ def simple_example():
 
     for ex, pred, gold in zip(X_test, preds, y_test):
         score = "correct" if pred == gold else "incorrect"
-        print("{0:>6} - predicted: {1:>4}; actual: {2:>4} - {3}".format(
-            "".join(ex), pred, gold, score))
+        print(
+            "{0:>6} - predicted: {1:>4}; actual: {2:>4} - {3}".format(
+                "".join(ex), pred, gold, score
+            )
+        )
 
     return accuracy_score(y_test, preds)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     simple_example()

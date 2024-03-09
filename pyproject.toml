@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "cs224u"
+version = "0.1.0"
+description = ""
+authors = ["Matthew Billman <mgbvox@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+numpy = "^1.26.4"
+scipy = "^1.12.0"
+matplotlib = "^3.8.3"
+scikit-learn = "^1.4.1.post1"
+nltk = "^3.8.1"
+pytest = "^8.0.2"
+jupyter = "^1.0.0"
+pandas = "^2.2.1"
+jupyterlab = "^4.1.4"
+torch = "^2.2.1"
+torchvision = "^0.17.1"
+torchaudio = "^2.2.1"
+transformers = "^4.38.2"
+datasets = "^2.18.0"
+spacy = "^3.7.4"
+openai = "^0.28.1"
+python-dotenv = "^1.0.1"
+wget = "^3.2"
+dspy = {path = "/Users/mgb/PycharmProjects/dspy"}
+cs224u-utils = {path = "../cs224u-utils"}
+accelerate = "^0.27.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -19,9 +19,7 @@ __version__ = "CS224u, Stanford, Spring 2022"
 utils.fix_random_seeds()
 
 
-PARAMS_WITH_TEST_VALUES = [
-    ["hidden_dim", 10],
-    ["hidden_activation", nn.ReLU()]]
+PARAMS_WITH_TEST_VALUES = [["hidden_dim", 10], ["hidden_activation", nn.ReLU()]]
 
 
 PARAMS_WITH_TEST_VALUES += BASE_PARAMS
@@ -34,7 +32,6 @@ def random_matrix():
 
 @pytest.fixture
 def random_low_rank_matrix():
-
     def randmatrix(m, n, sigma=0.1, mu=0):
         return sigma * np.random.randn(m, n) + mu
 
@@ -46,12 +43,15 @@ def random_low_rank_matrix():
     return X
 
 
-@pytest.mark.parametrize("model_class, pandas", [
-    [TorchAutoencoder, True],
-    [TorchAutoencoder, False],
-    [Autoencoder, True],
-    [Autoencoder, False]
-])
+@pytest.mark.parametrize(
+    "model_class, pandas",
+    [
+        [TorchAutoencoder, True],
+        [TorchAutoencoder, False],
+        [Autoencoder, True],
+        [Autoencoder, False],
+    ],
+)
 def test_model(random_matrix, model_class, pandas):
     """Just makes sure that this code will run; it doesn't check that
     it is creating good models.
@@ -101,11 +101,9 @@ def test_parameter_setting(param, expected):
     assert result == expected
 
 
-@pytest.mark.parametrize("param, expected", [
-    ['hidden_dim', 10],
-    ['max_iter', 10],
-    ['eta', 0.1]
-])
+@pytest.mark.parametrize(
+    "param, expected", [["hidden_dim", 10], ["max_iter", 10], ["eta", 0.1]]
+)
 def test_np_parameter_setting(param, expected):
     mod = Autoencoder()
     mod.set_params(**{param: expected})
@@ -113,10 +111,7 @@ def test_np_parameter_setting(param, expected):
     assert result == expected
 
 
-@pytest.mark.parametrize("with_y, expected", [
-    [True, 2],
-    [False, 1]
-])
+@pytest.mark.parametrize("with_y, expected", [[True, 2], [False, 1]])
 def test_build_dataset(random_matrix, with_y, expected):
     X = random_matrix
     mod = TorchAutoencoder()
@@ -128,12 +123,15 @@ def test_build_dataset(random_matrix, with_y, expected):
     assert len(result) == expected
 
 
-@pytest.mark.parametrize("attr, layer_index, weight_dim", [
-    ["hidden_dim", 0, 0], # We write xW; PyTorch does Wx^T
-    ["hidden_dim", 2, 1],
-    ["input_dim", 0, 1],
-    ["output_dim", 2, 0]
-])
+@pytest.mark.parametrize(
+    "attr, layer_index, weight_dim",
+    [
+        ["hidden_dim", 0, 0],  # We write xW; PyTorch does Wx^T
+        ["hidden_dim", 2, 1],
+        ["input_dim", 0, 1],
+        ["output_dim", 2, 0],
+    ],
+)
 def test_model_graph_dimensions(random_matrix, attr, layer_index, weight_dim):
     X = random_matrix
     mod = TorchAutoencoder(max_iter=1)
@@ -160,22 +158,16 @@ def test_build_dataset_input_dim(random_matrix, early_stopping):
     assert mod.input_dim == X.shape[1]
 
 
-@pytest.mark.parametrize("model_class", [
-    TorchAutoencoder,
-    Autoencoder
-])
+@pytest.mark.parametrize("model_class", [TorchAutoencoder, Autoencoder])
 def test_hyperparameter_selection(random_matrix, model_class):
     X = random_matrix
-    param_grid = {'hidden_dim': [10, 20]}
+    param_grid = {"hidden_dim": [10, 20]}
     mod = model_class(max_iter=5)
     xval = RandomizedSearchCV(mod, param_grid, cv=2)
     xval.fit(X)
 
 
-@pytest.mark.parametrize("model_class", [
-    TorchAutoencoder,
-    Autoencoder
-])
+@pytest.mark.parametrize("model_class", [TorchAutoencoder, Autoencoder])
 def test_cross_validation_sklearn(random_matrix, model_class):
     X = random_matrix
     mod = model_class(max_iter=5)
@@ -209,7 +201,7 @@ def test_save_load(random_matrix):
     mod = TorchAutoencoder(hidden_dim=5, max_iter=2)
     mod.fit(X)
     mod.predict(X)
-    with tempfile.NamedTemporaryFile(mode='wb') as f:
+    with tempfile.NamedTemporaryFile(mode="wb") as f:
         name = f.name
         mod.to_pickle(name)
         mod2 = TorchAutoencoder.from_pickle(name)

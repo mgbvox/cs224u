@@ -37,17 +37,17 @@ def glove2dict(src_filename):
     """
     # This distribution has some words with spaces, so we have to
     # assume its dimensionality and parse out the lines specially:
-    if '840B.300d' in src_filename:
+    if "840B.300d" in src_filename:
         line_parser = lambda line: line.rsplit(" ", 300)
     else:
         line_parser = lambda line: line.strip().split()
     data = {}
-    with open(src_filename, encoding='utf8') as f:
+    with open(src_filename, encoding="utf8") as f:
         while True:
             try:
                 line = next(f)
                 line = line_parser(line)
-                data[line[0]] = np.array(line[1: ], dtype=np.float64)
+                data[line[0]] = np.array(line[1:], dtype=np.float64)
             except StopIteration:
                 break
             except UnicodeDecodeError:
@@ -94,7 +94,7 @@ def randmatrix(m, n, lower=-0.5, upper=0.5):
     Creates an m x n matrix of random values in [lower, upper].
 
     """
-    return np.array([random.uniform(lower, upper) for i in range(m*n)]).reshape(m, n)
+    return np.array([random.uniform(lower, upper) for i in range(m * n)]).reshape(m, n)
 
 
 def safe_macro_f1(y, y_pred, **kwargs):
@@ -104,7 +104,7 @@ def safe_macro_f1(y, y_pred, **kwargs):
     gold labels and `y_pred` is the list of predicted labels.
 
     """
-    return f1_score(y, y_pred, average='macro', pos_label=None)
+    return f1_score(y, y_pred, average="macro", pos_label=None)
 
 
 def progress_bar(msg, verbose=True):
@@ -113,7 +113,7 @@ def progress_bar(msg, verbose=True):
 
     """
     if verbose:
-        sys.stderr.write('\r')
+        sys.stderr.write("\r")
         sys.stderr.write(msg)
         sys.stderr.flush()
 
@@ -155,14 +155,15 @@ def mcnemar(y_true, pred_a, pred_b):
             c01 += 1
         elif a != y and b == y:
             c10 += 1
-    stat = ((np.abs(c10 - c01) - 1.0)**2) / (c10 + c01)
+    stat = ((np.abs(c10 - c01) - 1.0) ** 2) / (c10 + c01)
     df = 1
     pval = stats.chi2.sf(stat, df)
     return stat, pval
 
 
 def fit_classifier_with_hyperparameter_search(
-        X, y, basemod, cv, param_grid, scoring='f1_macro', verbose=True):
+    X, y, basemod, cv, param_grid, scoring="f1_macro", verbose=True
+):
     """
     Fit a classifier with hyperparameters set via cross-validation.
 
@@ -248,8 +249,7 @@ def get_vocab(X, n_words=None, mincount=1):
     return sorted(vocab)
 
 
-def create_pretrained_embedding(
-        lookup, vocab, required_tokens=('$UNK', "<s>", "</s>")):
+def create_pretrained_embedding(lookup, vocab, required_tokens=("$UNK", "<s>", "</s>")):
     """
     Create an embedding matrix from a lookup and a specified vocab.
     Words from `vocab` that are not in `lookup` are given random
@@ -284,11 +284,8 @@ def create_pretrained_embedding(
 
 
 def fix_random_seeds(
-        seed=42,
-        set_system=True,
-        set_torch=True,
-        set_tensorflow=False,
-        set_torch_cudnn=True):
+    seed=42, set_system=True, set_torch=True, set_tensorflow=False, set_torch_cudnn=True
+):
     """
     Fix random seeds for reproducibility.
 
@@ -383,6 +380,7 @@ class DenseTransformer(TransformerMixin):
     in the context of Pipelines.
 
     """
+
     def fit(self, X, y=None, **fit_params):
         return self
 

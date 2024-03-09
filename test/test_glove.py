@@ -16,10 +16,7 @@ __version__ = "CS224u, Stanford, Spring 2022"
 utils.fix_random_seeds()
 
 
-PARAMS_WITH_TEST_VALUES = [
-    ["embed_dim", 20],
-    ["alpha", 0.65],
-    ["xmax", 75]]
+PARAMS_WITH_TEST_VALUES = [["embed_dim", 20], ["alpha", 0.65], ["xmax", 75]]
 
 
 PARAMS_WITH_TEST_VALUES += BASE_PARAMS
@@ -27,11 +24,14 @@ PARAMS_WITH_TEST_VALUES += BASE_PARAMS
 
 @pytest.fixture
 def count_matrix():
-    return np.array([
-        [  4.,   4.,   2.,   0.],
-        [  4.,  61.,   8.,  18.],
-        [  2.,   8.,  10.,   0.],
-        [  0.,  18.,   0.,   5.]])
+    return np.array(
+        [
+            [4.0, 4.0, 2.0, 0.0],
+            [4.0, 61.0, 8.0, 18.0],
+            [2.0, 8.0, 10.0, 0.0],
+            [0.0, 18.0, 0.0, 5.0],
+        ]
+    )
 
 
 @pytest.mark.parametrize("pandas", [True, False])
@@ -100,7 +100,7 @@ def test_save_load(count_matrix):
     X = count_matrix
     mod = TorchGloVe(max_iter=2)
     mod.fit(X)
-    with tempfile.NamedTemporaryFile(mode='wb') as f:
+    with tempfile.NamedTemporaryFile(mode="wb") as f:
         name = f.name
         mod.to_pickle(name)
         mod2 = TorchGloVe.from_pickle(name)

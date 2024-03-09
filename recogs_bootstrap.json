@@ -1,0 +1,79 @@
+{
+  "predict": {
+    "lm": null,
+    "traces": [],
+    "train": [],
+    "demos": [
+      {
+        "augmented": true,
+        "sentence": "A rose was helped by a dog .",
+        "logical_form": "rose ( 12 ) ; dog ( 34 ) ; help ( 7 ) AND theme ( 7 , 12 ) AND agent ( 7 , 34 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "Emma rolled a teacher .",
+        "logical_form": "Emma ( 10 ) ; teacher ( 27 ) ; roll ( 15 ) AND agent ( 15 , 10 ) AND theme ( 15 , 27 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "A cake was forwarded to Levi by Charlotte .",
+        "logical_form": "cake ( 3 ) ; Levi ( 27 ) ; Charlotte ( 15 ) ; forward ( 9 ) AND theme ( 9 , 3 ) AND recipient ( 9 , 27 ) AND agent ( 9 , 15 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "The captain ate .",
+        "logical_form": "* captain ( 12 ) ; eat ( 34 ) AND agent ( 34 , 12 )"
+      },
+      {
+        "sentence": "The kid poked a girl in the house .",
+        "logical_form": "* kid ( 37 ) ; girl ( 21 ) ; * house ( 52 ) ; nmod . in ( 21 , 52 ) AND poke ( 35 ) AND agent ( 35 , 37 ) AND theme ( 35 , 21 )"
+      },
+      {
+        "sentence": "The cat burned a boy on a plate .",
+        "logical_form": "* cat ( 44 ) ; boy ( 13 ) ; plate ( 17 ) ; nmod . on ( 13 , 17 ) AND burn ( 3 ) AND agent ( 3 , 44 ) AND theme ( 3 , 13 )"
+      },
+      {
+        "sentence": "A girl rolled a donut beside the nest .",
+        "logical_form": "girl ( 52 ) ; donut ( 37 ) ; * nest ( 21 ) ; nmod . beside ( 37 , 21 ) AND roll ( 20 ) AND agent ( 20 , 52 ) AND theme ( 20 , 37 )"
+      },
+      {
+        "sentence": "A toy was liked by the girl .",
+        "logical_form": "toy ( 59 ) ; * girl ( 23 ) ; like ( 13 ) AND theme ( 13 , 59 ) AND agent ( 13 , 23 )"
+      },
+      {
+        "sentence": "The drink was studied .",
+        "logical_form": "* drink ( 27 ) ; study ( 41 ) AND theme ( 41 , 27 )"
+      },
+      {
+        "sentence": "Olivia said that the rose rolled .",
+        "logical_form": "Olivia ( 6 ) ; * rose ( 38 ) ; say ( 39 ) AND agent ( 39 , 6 ) AND ccomp ( 39 , 53 ) AND roll ( 53 ) AND theme ( 53 , 38 )"
+      },
+      {
+        "sentence": "The girl lended the ball beside the bottle to Sofia Emma ate the goose beside the vehicle on a notebook a girl noticed the ball beside the vehicle in a box .",
+        "logical_form": "* girl ( 59 ) ; * ball ( 0 ) ; * bottle ( 25 ) ; Sofia ( 12 ) ; Emma ( 9 ) ; * goose ( 24 ) ; * vehicle ( 42 ) ; notebook ( 38 ) ; girl ( 47 ) ; * ball ( 1 ) ; * vehicle ( 35 ) ; box ( 5 ) ; nmod . beside ( 0 , 25 ) AND nmod . beside ( 24 , 42 ) AND nmod . on ( 42 , 38 ) AND nmod . beside ( 1 , 35 ) AND nmod . in ( 35 , 5 ) AND lend ( 52 ) AND agent ( 52 , 59 ) AND theme ( 52 , 0 ) AND recipient ( 52 , 12 ) AND eat ( 17 ) AND agent ( 17 , 9 ) AND theme ( 17 , 24 ) AND notice ( 3 ) AND agent ( 3 , 47 ) AND theme ( 3 , 1 )"
+      },
+      {
+        "sentence": "A cat gave the girl the bag beside the table .",
+        "logical_form": "cat ( 24 ) ; * girl ( 45 ) ; * bag ( 48 ) ; * table ( 42 ) ; nmod . beside ( 48 , 42 ) AND give ( 41 ) AND agent ( 41 , 24 ) AND recipient ( 41 , 45 ) AND theme ( 41 , 48 )"
+      },
+      {
+        "sentence": "The toothbrush was painted by Emma .",
+        "logical_form": "* toothbrush ( 41 ) ; Emma ( 14 ) ; paint ( 6 ) AND theme ( 6 , 41 ) AND agent ( 6 , 14 )"
+      },
+      {
+        "sentence": "A cookie was fed to the girl .",
+        "logical_form": "cookie ( 26 ) ; * girl ( 8 ) ; feed ( 20 ) AND theme ( 20 , 26 ) AND recipient ( 20 , 8 )"
+      },
+      {
+        "sentence": "Oliver sketched .",
+        "logical_form": "Oliver ( 37 ) ; sketch ( 38 ) AND agent ( 38 , 37 )"
+      },
+      {
+        "sentence": "A cake was floated by the zebra .",
+        "logical_form": "cake ( 52 ) ; * zebra ( 48 ) ; float ( 4 ) AND theme ( 4 , 52 ) AND agent ( 4 , 48 )"
+      }
+    ],
+    "signature_instructions": "Translate English sentences into logical form.",
+    "signature_prefix": "Logical Form:"
+  }
+}

@@ -90,15 +90,17 @@ class TorchRNNDataset(torch.utils.data.Dataset):
 
 
 class TorchRNNModel(nn.Module):
-    def __init__(self,
-            vocab_size,
-            embed_dim=50,
-            embedding=None,
-            use_embedding=True,
-            rnn_cell_class=nn.LSTM,
-            hidden_dim=50,
-            bidirectional=False,
-            freeze_embedding=False):
+    def __init__(
+        self,
+        vocab_size,
+        embed_dim=50,
+        embedding=None,
+        use_embedding=True,
+        rnn_cell_class=nn.LSTM,
+        hidden_dim=50,
+        bidirectional=False,
+        freeze_embedding=False,
+    ):
         """
         Defines the core RNN computation graph. For an explanation of the
         parameters, see `TorchRNNClassifierModel`. This class handles just
@@ -117,22 +119,22 @@ class TorchRNNModel(nn.Module):
         # Graph
         if self.use_embedding:
             self.embedding = self._define_embedding(
-                embedding, vocab_size, self.embed_dim, self.freeze_embedding)
+                embedding, vocab_size, self.embed_dim, self.freeze_embedding
+            )
             self.embed_dim = self.embedding.embedding_dim
         self.rnn = rnn_cell_class(
             input_size=self.embed_dim,
             hidden_size=hidden_dim,
             batch_first=True,
-            bidirectional=bidirectional)
+            bidirectional=bidirectional,
+        )
 
     def forward(self, X, seq_lengths):
         if self.use_embedding:
             X = self.embedding(X)
         embs = torch.nn.utils.rnn.pack_padded_sequence(
-            X,
-            batch_first=True,
-            lengths=seq_lengths.cpu(),
-            enforce_sorted=False)
+            X, batch_first=True, lengths=seq_lengths.cpu(), enforce_sorted=False
+        )
         outputs, state = self.rnn(embs)
         return outputs, state
 
@@ -144,8 +146,7 @@ class TorchRNNModel(nn.Module):
             return emb
         elif isinstance(embedding, np.ndarray):
             embedding = torch.FloatTensor(embedding)
-            return nn.Embedding.from_pretrained(
-                embedding, freeze=freeze_embedding)
+            return nn.Embedding.from_pretrained(embedding, freeze=freeze_embedding)
         else:
             return embedding
 
@@ -174,11 +175,9 @@ class TorchRNNClassifierModel(nn.Module):
             self.classifier_dim = self.hidden_dim * 2
         else:
             self.classifier_dim = self.hidden_dim
-        self.hidden_layer = nn.Linear(
-            self.classifier_dim, self.hidden_dim)
+        self.hidden_layer = nn.Linear(self.classifier_dim, self.hidden_dim)
         self.classifier_activation = classifier_activation
-        self.classifier_layer = nn.Linear(
-            self.hidden_dim, self.output_dim)
+        self.classifier_layer = nn.Linear(self.hidden_dim, self.output_dim)
 
     def forward(self, X, seq_lengths):
         outputs, state = self.rnn(X, seq_lengths)
@@ -190,24 +189,26 @@ class TorchRNNClassifierModel(nn.Module):
         return logits
 
     def get_batch_final_states(self, state):
-        if self.rnn.rnn.__class__.__name__ == 'LSTM':
+        if self.rnn.rnn.__class__.__name__ == "LSTM":
             return state[0].squeeze(0)
         else:
             return state.squeeze(0)
 
 
 class TorchRNNClassifier(TorchModelBase):
-    def __init__(self,
-            vocab,
-            hidden_dim=50,
-            embedding=None,
-            use_embedding=True,
-            embed_dim=50,
-            rnn_cell_class=nn.LSTM,
-            bidirectional=False,
-            freeze_embedding=False,
-            classifier_activation=nn.ReLU(),
-            **base_kwargs):
+    def __init__(
+        self,
+        vocab,
+        hidden_dim=50,
+        embedding=None,
+        use_embedding=True,
+        embed_dim=50,
+        rnn_cell_class=nn.LSTM,
+        bidirectional=False,
+        freeze_embedding=False,
+        classifier_activation=nn.ReLU(),
+        **base_kwargs
+    ):
         """
         RNN-based Recurrent Neural Network for classification problems.
         The network will work for any kind of classification task.
@@ -278,14 +279,15 @@ class TorchRNNClassifier(TorchModelBase):
         self.classifier_activation = classifier_activation
         super().__init__(**base_kwargs)
         self.params += [
-            'hidden_dim',
-            'embed_dim',
-            'embedding',
-            'use_embedding',
-            'rnn_cell_class',
-            'bidirectional',
-            'freeze_embedding',
-            'classifier_activation']
+            "hidden_dim",
+            "embed_dim",
+            "embedding",
+            "use_embedding",
+            "rnn_cell_class",
+            "bidirectional",
+            "freeze_embedding",
+            "classifier_activation",
+        ]
         self.loss = nn.CrossEntropyLoss(reduction="mean")
 
     def build_graph(self):
@@ -306,12 +308,14 @@ class TorchRNNClassifier(TorchModelBase):
             rnn_cell_class=self.rnn_cell_class,
             hidden_dim=self.hidden_dim,
             bidirectional=self.bidirectional,
-            freeze_embedding=self.freeze_embedding)
+            freeze_embedding=self.freeze_embedding,
+        )
 
         model = TorchRNNClassifierModel(
             rnn=rnn,
             output_dim=self.n_classes_,
-            classifier_activation=self.classifier_activation)
+            classifier_activation=self.classifier_activation,
+        )
 
         self.embed_dim = rnn.embed_dim
 
@@ -369,7 +373,7 @@ class TorchRNNClassifier(TorchModelBase):
             new_X = []
             seq_lengths = []
             index = dict(zip(self.vocab, range(len(self.vocab))))
-            unk_index = index['$UNK']
+            unk_index = index["$UNK"]
             for ex in X:
                 seq = [index.get(w, unk_index) for w in ex]
                 seq = torch.tensor(seq)
@@ -465,26 +469,28 @@ class TorchRNNClassifier(TorchModelBase):
 def simple_example():
     utils.fix_random_seeds()
 
-    vocab = ['a', 'b', '$UNK']
+    vocab = ["a", "b", "$UNK"]
 
     # No b before an a
     train = [
-        [list('ab'), 'good'],
-        [list('aab'), 'good'],
-        [list('abb'), 'good'],
-        [list('aabb'), 'good'],
-        [list('ba'), 'bad'],
-        [list('baa'), 'bad'],
-        [list('bba'), 'bad'],
-        [list('bbaa'), 'bad'],
-        [list('aba'), 'bad']]
+        [list("ab"), "good"],
+        [list("aab"), "good"],
+        [list("abb"), "good"],
+        [list("aabb"), "good"],
+        [list("ba"), "bad"],
+        [list("baa"), "bad"],
+        [list("bba"), "bad"],
+        [list("bbaa"), "bad"],
+        [list("aba"), "bad"],
+    ]
 
     test = [
-        [list('baaa'), 'bad'],
-        [list('abaa'), 'bad'],
-        [list('bbaa'), 'bad'],
-        [list('aaab'), 'good'],
-        [list('aaabb'), 'good']]
+        [list("baaa"), "bad"],
+        [list("abaa"), "bad"],
+        [list("bbaa"), "bad"],
+        [list("aaab"), "good"],
+        [list("aaabb"), "good"],
+    ]
 
     X_train, y_train = zip(*train)
     X_test, y_test = zip(*test)
@@ -501,11 +507,14 @@ def simple_example():
 
     for ex, pred, gold in zip(X_test, preds, y_test):
         score = "correct" if pred == gold else "incorrect"
-        print("{0:>6} - predicted: {1:>4}; actual: {2:>4} - {3}".format(
-            "".join(ex), pred, gold, score))
+        print(
+            "{0:>6} - predicted: {1:>4}; actual: {2:>4} - {3}".format(
+                "".join(ex), pred, gold, score
+            )
+        )
 
     return mod.score(X_test, y_test)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     simple_example()

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)https://crfm.stanford.edu/2023/03/13/alpaca.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="https://crfm.stanford.edu/static/img/favicon.ico">
+	<title>Stanford CRFM</title>
+	<link rel="stylesheet" href="./alpaca_files/plugins.css">
+	<link rel="stylesheet" href="./alpaca_files/sandbox-aqua.css">
+	<link rel="stylesheet" href="./alpaca_files/dm.css">
+	<link rel="stylesheet" href="./alpaca_files/custom.css">
+<style type="text/css">img[onload^="SVGInject("]{visibility:hidden;}</style></head>
+<body data-new-gr-c-s-check-loaded="14.1153.0" data-gr-ext-installed=""><nav class="navbar classic transparent navbar-expand-lg navbar-light banner--clone fixed banner--stick">
+        <div class="container flex-lg-row flex-nowrap align-items-center">
+            <div class="navbar-brand w-100 d-flex flex-row align-items-center">
+                <a href="https://crfm.stanford.edu/">
+                    <img class="nav_logo1" src="./alpaca_files/crfm-rgb.png" style="width:9em; margin-top:3px">
+                </a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://hai.stanford.edu/" target="_blank">
+                    <img class="nav_logo2" src="./alpaca_files/hai.png" style="width:14em; margin-top:3px">
+                </a>
+                <div class="ms-auto">
+                    <button class="navbar-toggler hamburger" data-toggle="offcanvas-nav"><span></span></button>
+                </div>
+            </div>
+            <div class="navbar-collapse offcanvas-nav">
+                <ul class="navbar-nav" data-smartmenus-id="17073248799983792">
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/people.html">People</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/report.html">Report</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/research.html">Research</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/blog.html">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/courses.html">Courses</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/helm">HELM</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/ecosystem-graphs">Ecosystem graphs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" target="_blank" href="https://github.com/stanford-crfm">Code</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+	<div class="content-wrapper">
+		<div style="background-color: #8c1515; padding-top:0.5em; padding-bottom:0.5em; margin-bottom:0.2em">
+    <div class="container flex-lg-row flex-nowrap align-items-center">
+        <a href="https://www.stanford.edu/" target="_blank">
+            <img src="./alpaca_files/stanford-white.png" style="width: 160px; margin-top:7px">
+        </a>
+    </div>
+</div>
+
+<header class="wrapper bg-light pt-1">
+    <nav class="navbar classic transparent navbar-expand-lg navbar-light">
+        <div class="container flex-lg-row flex-nowrap align-items-center">
+            <div class="navbar-brand w-100 d-flex flex-row align-items-center">
+                <a href="https://crfm.stanford.edu/">
+                    <img class="nav_logo1" src="./alpaca_files/crfm-rgb.png" style="width:9em; margin-top:3px">
+                </a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="https://hai.stanford.edu/" target="_blank">
+                    <img class="nav_logo2" src="./alpaca_files/hai.png" style="width:14em; margin-top:3px">
+                </a>
+                <div class="ms-auto">
+                    <button class="navbar-toggler hamburger" data-toggle="offcanvas-nav"><span></span></button>
+                </div>
+            </div>
+            <div class="navbar-collapse offcanvas-nav">
+                <ul class="navbar-nav" data-smartmenus-id="1707324877606386">
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/people.html">People</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/report.html">Report</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/research.html">Research</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/blog.html">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/courses.html">Courses</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/helm">HELM</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://crfm.stanford.edu/ecosystem-graphs">Ecosystem graphs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" target="_blank" href="https://github.com/stanford-crfm">Code</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+		<section class="wrapper bg-light" style="margin-top:1em">
+			<div class="container py-lg-8 gx-lg-8 gx-xl-12 py-md-4">
+				<style>
+  .blog-wrapper {
+    width:75%;
+    margin:0 auto;
+    text-align:justify;
+  }
+  .blog-title {
+    text-align:center;
+    margin:0;
+    margin-bottom:1em;
+    margin-top:2em;
+  }
+  .blog-start {
+    margin:0;
+    margin:0 auto;
+    height:4px !important;
+    margin-top:2.8em;
+    margin-bottom:2.2em;
+    width:70%;
+  }
+  .blog-break {
+    margin:0;
+    margin:0 auto;
+    height:4px !important;
+    margin-bottom:2.2em;
+    width:90%;
+  }
+  .blog-author {
+    padding-bottom:1em;
+    text-align:center;
+    margin:0.75em 0;
+    font-weight: 600;
+    font-size:1.1em;
+  }
+  .blog-author-team {
+    text-align:center;
+    margin:0.5em 0;
+    font-weight: 600;
+  }
+  .blog-author-team-secondary {
+    text-align:center;
+    margin:0;
+    font-weight: 600;
+  }
+  .blog-tagline {
+    margin:0;
+    margin-bottom:1.8em;
+  }
+  .blog-p {
+    margin:0;
+    margin-bottom:1.8em;
+  }
+  .blog-half-width-img {
+    text-align:center;
+    margin:0;
+    margin-top:1em;
+    margin-bottom:1em;
+    width:50%;
+  }
+  .blog-full-width-img {
+    margin:0;
+    margin-top:1em;
+    margin-bottom:1em;
+    width:100%;
+  }
+  .blog-full-width-img-caption {
+    margin:0;
+    padding:0;
+    text-align: center;
+    margin-bottom:2em;
+  }
+  .blog-list {
+    margin:0;
+    padding:0;
+    padding-left:2.5em;
+    margin-top:0.5em;
+  }
+  .blog-p-blockquote {
+    font-size:1em;
+  }
+  .blockquote-content {
+    font-style: italic;
+  }
+  .blockquote-cite {
+    text-align:right;
+    font-style: italic;
+    margin-top:-1em;
+  }
+  .hover-items{
+    width:20em;
+    padding-bottom:-1em;
+    font-size:0.95em;
+  }
+  .blog-h5 {
+    margin-top: 0px;
+  }
+  .table-of-content {
+    text-align:center;
+    margin:0;
+    margin-bottom:2em;
+  }
+  .table-of-content h5 {
+    margin-bottom:1em;
+   }
+  .table-of-content h6 {
+    font-size:0.95em;
+   }
+
+  pre {
+    margin-top: 1em;
+    background: #ebebeb;
+    padding: 2em;
+    border-radius: 12px;
+  }
+
+</style>
+
+  <h2 class="blog-title">Alpaca: A Strong, Replicable Instruction-Following Model</h2>
+  
+  
+  
+  <h4 class="blog-author"><strong>Authors:</strong>
+    
+    <a href="https://www.rohantaori.com/" target="_blank">Rohan Taori*</a> and 
+    
+    <a href="https://ishaan.io/" target="_blank">Ishaan Gulrajani*</a> and 
+    
+    <a href="https://tiiiger.github.io/" target="_blank">Tianyi Zhang*</a> and 
+    
+    <a href="https://yanndubs.github.io/" target="_blank">Yann Dubois*</a> and 
+    
+    <a href="https://www.lxuechen.com/" target="_blank">Xuechen Li*</a> and 
+    
+    <a href="https://guestrin.su.domains/" target="_blank">Carlos Guestrin</a> and 
+    
+    <a href="https://cs.stanford.edu/~pliang/" target="_blank">Percy Liang</a> and 
+    
+    <a href="https://thashim.github.io/" target="_blank">Tatsunori B. Hashimoto</a>
+    
+  </h4>
+  
+
+  
+
+  <hr class="blog-start">
+
+  
+
+  <div class="blog-p">
+    <style>
+    img.block-img {
+        width: 60%;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 100%;
+    }
+    img.block-half-img {
+        width: 30%;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 100%;
+    }
+</style>
+
+<div class="blog-tagline">
+    <em>
+    We introduce <b>Alpaca 7B</b>, a model fine-tuned from the LLaMA 7B model on 52K
+instruction-following demonstrations. On our preliminary evaluation of single-turn instruction following, Alpaca behaves qualitatively similarly to OpenAI’s text-davinci-003, while being surprisingly small and easy/cheap to reproduce (&lt;600$). Checkout our code release on <a href="https://github.com/tatsu-lab/stanford_alpaca" style="text-decoration: underline">GitHub</a>.
+    </em> 
+</div>
+<div class="blog-tagline">
+    <em>
+Update: The public demo is now disabled. The original goal of releasing a demo was to disseminate our research in an accessible way.  We feel that we have mostly achieved this goal, and given the hosting costs and the inadequacies of our content filters, we decided to bring down the demo.
+    </em> 
+</div>
+
+<p align="center" width="100%">
+<img src="./alpaca_files/logo.png" alt="Stanford-Alpaca" style="width: 50%; min-width: 300px; display: block; margin: auto;">
+</p>
+
+<h1 id="overview">Overview</h1>
+
+<p>Instruction-following models such as GPT-3.5 (text-davinci-003), ChatGPT, Claude, and Bing Chat have become increasingly powerful.
+Many users now interact with these models regularly and even use them for work.
+However, despite their widespread deployment, instruction-following models still have many deficiencies:
+they can generate false information, propagate social stereotypes, and produce toxic language.</p>
+
+<p>To make maximum progress on addressing these pressing problems,
+it is important for the academic community to engage.
+Unfortunately, doing research on instruction-following models in academia has been difficult,
+as there is no easily accessible model that comes close in capabilities to closed-source models such as OpenAI’s text-davinci-003.</p>
+
+<p>We are releasing our findings about an instruction-following language model, dubbed <strong>Alpaca</strong>,
+which is fine-tuned from Meta’s <a href="https://ai.facebook.com/blog/large-language-model-llama-meta-ai/">LLaMA</a> 7B model.
+We train the Alpaca model on 52K instruction-following demonstrations generated in the style of <a href="https://arxiv.org/abs/2212.10560">self-instruct</a> using text-davinci-003.
+On the self-instruct evaluation set, Alpaca shows many behaviors similar to OpenAI’s text-davinci-003, but is also surprisingly small and easy/cheap to reproduce.</p>
+
+<p>We are releasing our training recipe and data, and intend to release the model weights in the future.
+We are also hosting an interactive demo to enable the research community to better understand the behavior of Alpaca.
+Interaction can expose unexpected capabilities and failures, which will guide us for the future evaluation of these models.
+We also encourage users to report any concerning behaviors in our web demo so that we can better understand and mitigate these behaviors.
+As any release carries risks, we discuss our thought process for this open release later in this blog post.</p>
+
+<p>We emphasize that Alpaca is intended <strong>only for academic research</strong> and any <strong>commercial use is prohibited</strong>.
+There are three factors in this decision:
+First, Alpaca is based on LLaMA, which has a non-commercial <a href="https://docs.google.com/forms/d/e/1FAIpQLSfqNECQnMkycAp2jP4Z9TFX0cGR4uf7b_fBxjY_OjhJILlKGA/viewform">license</a>, so we necessarily inherit this decision.
+Second, the instruction data is based on OpenAI’s text-davinci-003,
+whose <a href="https://openai.com/policies/terms-of-use">terms of use</a> prohibit developing models that compete with OpenAI.
+Finally, we have not designed adequate safety measures, so Alpaca is not ready to be deployed for general use.</p>
+
+<h2 id="training-recipe">Training recipe</h2>
+
+<p>There are two important challenges to training a high-quality instruction-following model under an academic budget:
+a strong pretrained language model and high-quality instruction-following data.
+The first challenge is addressed with the recent release of Meta’s new LLaMA models.
+For the second challenge, the <a href="https://arxiv.org/abs/2212.10560">self-instruct</a> paper suggests using an existing strong language model to automatically generate instruction data.
+In particular, Alpaca is a language model fine-tuned using supervised learning from a LLaMA 7B model on 52K instruction-following demonstrations generated from OpenAI’s text-davinci-003.</p>
+
+<p>The figure below illustrates how we obtained the Alpaca model.
+For the data, we generated instruction-following demonstrations by building upon the self-instruct method.
+We started with the 175 human-written instruction-output pairs from the <a href="https://github.com/yizhongw/self-instruct">self-instruct seed set</a>.
+We then prompted text-davinci-003 to generate more instructions using the seed set as in-context examples.
+We improved over the self-instruct method by simplifying the generation pipeline (see details in <a href="https://github.com/tatsu-lab/stanford_alpaca#data-generation-process">GitHub</a>) and significantly reduced the cost.
+Our data generation process results in 52K unique instructions and the corresponding outputs, which costed less than $500 using the OpenAI API.</p>
+
+<p align="center" width="100%">
+<img src="./alpaca_files/alpaca_main.jpg" alt="Alpaca pipeline" style="width: 55em; display: block; margin: auto;">
+</p>
+
+<p>Equipped with this instruction-following dataset, we then fine-tuned the LLaMA models using Hugging Face’s training framework, taking advantage of techniques like Fully Sharded Data Parallel and mixed precision training. For our initial run, fine-tuning a 7B LLaMA model took 3 hours on 8 80GB A100s, which costs less than $100 on most cloud compute providers. We note that training efficiency can be improved to further reduce the cost.</p>
+
+<h2 id="preliminary-evaluation">Preliminary evaluation</h2>
+
+<p>To evaluate Alpaca, we conduct human evaluation (by the 5 student authors) on the inputs from the <a href="https://github.com/yizhongw/self-instruct/blob/main/human_eval/user_oriented_instructions.jsonl">self-instruct evaluation set</a>.
+This evaluation set was collected by the self-instruct authors and covers a diverse list of user-oriented instructions including email writing, social media, and productivity tools.
+We performed a blind pairwise comparison between text-davinci-003 and Alpaca 7B, and we found that these two models have very similar performance:
+Alpaca wins 90 versus 89 comparisons against text-davinci-003.</p>
+
+<p>We were quite surprised by this result given the small model size and the modest amount of instruction following data.
+Besides leveraging this static evaluation set, we have also been testing the Alpaca model interactively and found that Alpaca often behaves similarly to text-davinci-003 on a diverse set of inputs.
+We acknowledge that our evaluation may be limited in scale and diversity. So we are releasing an interactive demo of Alpaca, and encourage readers to evaluate Alpaca themselves and give us feedback.</p>
+
+<p>In the rest of this section, we include several interaction examples to showcase the capabilities and limitations of Alpaca.</p>
+
+<p align="center" width="100%">
+<img src="./alpaca_files/alpaca_right_llama.png" alt="Alpaca about llamas" style="width: 55em; display: block; margin: auto;">
+</p>
+
+<p align="center" width="100%">
+<img src="./alpaca_files/alpaca_right_email.png" alt="Alpaca about Stanford admits" style="width: 55em; display: block; margin: auto;">
+</p>
+
+<p>The above examples show that the outputs of Alpaca are generally well-written. We note that Alpaca reflects the general style of the instruction-following dataset. As a result, Alpaca’s answers are typically shorter than ChatGPT, reflecting text-davinci-003’s shorter outputs.</p>
+
+<h3 id="known-limitations">Known limitations</h3>
+
+<p>Alpaca also exhibits several common deficiencies of language models, including hallucination, toxicity, and stereotypes.
+Hallucination in particular seems to be a common failure mode for Alpaca, even compared to text-davinci-003.</p>
+
+<p>For example, in the following figure, Alpaca wrongly says that the Capital of Tanzania is Dar es Salaam, which is the largest city in Tanzania.
+(It was the capital until 1974, when it was replaced by Dodoma.)</p>
+
+<p align="center" width="100%">
+<img src="./alpaca_files/alpaca_wrong_capital.png" alt="Alpaca about Tanzania&#39;s capital" style="width: 55em; display: block; margin: auto;">
+</p>
+
+<p>Furthermore, Alpaca can be used to generate well-written outputs that spread misinformation, as seen in the following example.</p>
+
+<p align="center" width="100%">
+<img src="./alpaca_files/alpaca_wrong_42.png" alt="Alpaca about random seeds" style="width: 55em; display: block; margin: auto;">
+</p>
+
+<p>Alpaca likely contains many other limitations associated with both the underlying language model and the instruction tuning data. However, we believe that the artifact will still be useful to the community, as it provides a relatively lightweight model that serves as a basis to study important deficiencies. We encourage users to help us identify new kinds of failures by flagging them in the web demo.
+Overall, we hope that the release of Alpaca can facilitate further research into instruction-following models and their alignment with human values.</p>
+
+<h2 id="assets-released">Assets released</h2>
+
+<p>We are releasing the following assets today:</p>
+
+<ul>
+  <li><strong>Demo</strong>: an interactive demo for everyone to try out Alpaca.</li>
+  <li><strong>Data</strong>: <a href="https://github.com/tatsu-lab/stanford_alpaca#data-release">52K demonstrations</a> used to fine-tune Alpaca.</li>
+  <li><strong>Data generation process</strong>: the code for <a href="https://github.com/tatsu-lab/stanford_alpaca#data-generation-process">generating the data</a>.</li>
+  <li><strong>Training code</strong>: for <a href="https://github.com/tatsu-lab/stanford_alpaca#fine-tuning">fine-tuning</a> the model using the Hugging Face API.</li>
+</ul>
+
+<p>We intend to release the following assets in the near future:</p>
+
+<ul>
+  <li><strong>Model weights</strong>: We have reached out to Meta to obtain guidance on releasing the Alpaca model weights, both for the 7B Alpaca and for fine-tuned versions of the larger LLaMA models.</li>
+</ul>
+
+<h2 id="release-decision">Release decision</h2>
+
+<p>We believe that releasing the above assets will enable the academic community to
+perform controlled scientific studies on instruction-following language models,
+resulting in better science and ultimately new techniques to address the existing deficiencies with these models.</p>
+
+<p>At the same time, any release carries some risk.
+First, we recognize that releasing our training recipe reveals the feasibility of certain capabilities.
+On one hand, this enables more people (including bad actors)
+to create models that could cause harm (either intentionally or not).
+On the other hand, this awareness might incentivize swift defensive action,
+especially from the academic community, now empowered by the means to perform deeper safety research on such models.
+Overall, we believe that the benefits for the research community outweigh the risks of this particular release.</p>
+
+<p>Given that we are releasing the training recipe,
+we believe that releasing the data, model weights, and training code
+incur minimal further risk, given the simplicity of the recipe.
+At the same time, releasing these assets has enormous benefits for reproducible science,
+so that the academic community can use standard datasets, models, and code
+to perform controlled comparisons and to explore extensions.</p>
+
+<p>Deploying an interactive demo for Alpaca also poses potential risks, such as more widely
+disseminating harmful content and lowering the barrier for spam, fraud, or disinformation.
+We have put into place two risk mitigation strategies. First, we have implemented a content filter
+using <a href="https://platform.openai.com/docs/api-reference/moderations">OpenAI’s content moderation API</a>,
+which filters out harmful content as defined by OpenAI’s
+usage policies. Second, we watermark all the model outputs using the method described in
+<a href="https://arxiv.org/abs/2301.10226">Kirchenbauer et al. 2023</a>,
+so that others can detect (with some probability) whether an output comes from Alpaca 7B.
+Finally, we have strict terms and conditions for using the demo;
+it is restricted to non-commercial uses and to uses that follow <a href="https://docs.google.com/forms/d/e/1FAIpQLSfqNECQnMkycAp2jP4Z9TFX0cGR4uf7b_fBxjY_OjhJILlKGA/viewform">LLaMA’s license agreement</a>.</p>
+
+<p>We understand that these mitigation measures can be circumvented once we release the model weights or if users train their own instruction-following models.
+However, by installing these mitigations, we hope to advance the best practices and ultimately develop <a href="https://crfm.stanford.edu/2022/05/17/community-norms.html">community norms</a> for the responsible deployment of foundation models.</p>
+
+<h2 id="future-directions">Future directions</h2>
+
+<p>We are excited by the research opportunities that Alpaca unlocks. There are many exciting future directions:</p>
+
+<ul>
+  <li>Evaluation: We need to evaluate Alpaca more rigorously.
+We will start with <a href="https://crfm.stanford.edu/helm/latest/">HELM</a> (Holistic Evaluation of Language Models),
+which hopefully will evolve to capture more generative, instruction-following scenarios.</li>
+  <li>Safety: We would like to further study the risks of Alpaca and improve its safety using methods such as automatic red teaming, auditing, and adaptive testing.</li>
+  <li>Understanding: We hope to better understand how capabilities arise from the training recipe.
+What properties of a base model do you need? What happens when you scale up?
+What properties of instruction data is needed? What are alternatives to using self-instruct on text-davinci-003?</li>
+</ul>
+
+<h2 id="acknowledgments">Acknowledgments</h2>
+
+<p>This work was done at the Center for Research on Foundation Models (CRFM) with support from the Stanford Institute for Human-Centered AI (HAI) and the Stanford Natural Language Processing (NLP) group. We also especially thank Yifan Mai for helpful engineering support for demo deployment.</p>
+
+<p>Alpaca depends directly and critically on existing works.
+We would like to thank Meta AI Research for training and releasing the LLaMA models,
+the self-instruct team for giving us a basis for the data generation pipeline,
+Hugging Face for the training code,
+and OpenAI for paving the path and showing what can be achieved.</p>
+
+<p>We would also like to highlight that there are many other open efforts for instruction-following LLMs and chat models, including <a href="https://www.together.xyz/blog/openchatkit">OpenChatKit</a>, <a href="https://open-assistant.io/">Open Assistant</a>, and <a href="https://carper.ai/instruct-gpt-announcement/">Carper AI</a>.</p>
+
+
+  </div>
+
+
+			</div>
+		</section>
+		<footer class="bg-light mt-8">
+    <div class="container pb-7">
+        <hr class="mt-auto mb-7">
+        <div class="d-md-flex align-items-center justify-content-between">
+            <p class="mb-2 mb-lg-0" style="">
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSc-jzXEcBFDfXJ3s6i_xCtctaSDT6jjvJmOPu69RYjsn3X74g/viewform" target="_blank" class="">Sign up</a> to get email updates on the Center for Research on Foundation Models (CRFM)
+                or email us at <a href="mailto:%20contact-crfm@stanford.edu">contact-crfm@stanford.edu</a>.
+            </p>
+        </div>
+        <div class="d-md-flex align-items-center justify-content-between">
+            <p class="mb-2 mb-lg-0" style="">
+                CRFM is grateful to our <a href="https://crfm.stanford.edu/support.html">supporters</a>.
+            </p>
+        </div>
+        <div class="d-md-flex align-items-center justify-content-between">
+            <p class="mb-2 mb-lg-0">
+                © 2021. Stanford Center for Research on Foundation Models.
+                <br>
+                <span style="font-size:0.92em">Designed by <a href="http://www.joonsungpark.com/" target="_blank" style="color:#61697A">Joon Sung Park</a>.</span>
+            </p>
+        </div>
+    </div>
+</footer>
+<div class="progress-wrap active-progress">
+    <svg class="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
+        <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98" style="transition: stroke-dashoffset 10ms linear 0s; stroke-dasharray: 307.919, 307.919; stroke-dashoffset: 0.0257975;"></path>
+    </svg>
+</div>
+<script src="./alpaca_files/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+<script src="./alpaca_files/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous"></script>
+<script src="./alpaca_files/plugins.js"></script>
+<script src="./alpaca_files/scripts.js"></script>
+
+	</div>
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;limited&quot;,&quot;isActive&quot;:false,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>

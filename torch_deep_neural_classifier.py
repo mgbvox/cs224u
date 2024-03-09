@@ -20,9 +20,7 @@ class ActivationLayer(torch.nn.Module):
 
 
 class TorchDeepNeuralClassifier(TorchShallowNeuralClassifier):
-    def __init__(self,
-            num_layers=1,
-            **base_kwargs):
+    def __init__(self, num_layers=1, **base_kwargs):
         """
         A dense, feed-forward network with the number of hidden layers
         set by `num_layers`.
@@ -48,7 +46,7 @@ class TorchDeepNeuralClassifier(TorchShallowNeuralClassifier):
         self.num_layers = num_layers
         super().__init__(**base_kwargs)
         self.loss = nn.CrossEntropyLoss(reduction="mean")
-        self.params += ['num_layers']
+        self.params += ["num_layers"]
 
     def build_graph(self):
         """
@@ -62,17 +60,24 @@ class TorchDeepNeuralClassifier(TorchShallowNeuralClassifier):
         # Input to hidden:
         self.layers = [
             ActivationLayer(
-                self.input_dim, self.hidden_dim, self.device, self.hidden_activation)]
+                self.input_dim, self.hidden_dim, self.device, self.hidden_activation
+            )
+        ]
         # Hidden to hidden:
-        for _ in range(self.num_layers-1):
+        for _ in range(self.num_layers - 1):
             self.layers += [
                 ActivationLayer(
-                    self.hidden_dim, self.hidden_dim, self.device, self.hidden_activation)]
+                    self.hidden_dim,
+                    self.hidden_dim,
+                    self.device,
+                    self.hidden_activation,
+                )
+            ]
         # Hidden to output:
         self.layers.append(
-            nn.Linear(self.hidden_dim, self.n_classes_, device=self.device))
+            nn.Linear(self.hidden_dim, self.n_classes_, device=self.device)
+        )
         return nn.Sequential(*self.layers)
-
 
 
 def simple_example():
@@ -88,7 +93,8 @@ def simple_example():
     y = digits.target
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.33, random_state=42)
+        X, y, test_size=0.33, random_state=42
+    )
 
     mod = TorchDeepNeuralClassifier(num_layers=2)
 
@@ -104,5 +110,5 @@ def simple_example():
     return accuracy_score(y_test, preds)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     simple_example()

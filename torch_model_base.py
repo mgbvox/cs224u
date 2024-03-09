@@ -6,28 +6,32 @@ import torch
 import torch.nn as nn
 import utils
 
+from tqdm import tqdm
+
 __author__ = "Christopher Potts"
 __version__ = "CS224u, Stanford, Spring 2023"
 
 
 class TorchModelBase:
-    def __init__(self,
-            batch_size=1028,
-            max_iter=1000,
-            eta=0.001,
-            optimizer_class=torch.optim.Adam,
-            l2_strength=0,
-            gradient_accumulation_steps=1,
-            max_grad_norm=None,
-            warm_start=False,
-            early_stopping=False,
-            validation_fraction=0.1,
-            shuffle_train=True,
-            n_iter_no_change=10,
-            tol=1e-5,
-            device=None,
-            display_progress=True,
-            **optimizer_kwargs):
+    def __init__(
+        self,
+        batch_size=1028,
+        max_iter=1000,
+        eta=0.001,
+        optimizer_class=torch.optim.Adam,
+        l2_strength=0,
+        gradient_accumulation_steps=1,
+        max_grad_norm=None,
+        warm_start=False,
+        early_stopping=False,
+        validation_fraction=0.1,
+        shuffle_train=True,
+        n_iter_no_change=10,
+        tol=1e-5,
+        device=None,
+        display_progress=True,
+        **optimizer_kwargs,
+    ):
         """
         Base class for all the PyTorch-based models.
 
@@ -147,7 +151,7 @@ class TorchModelBase:
         self.n_iter_no_change = n_iter_no_change
         self.tol = tol
         if device is None:
-            if torch.cuda.is_available(): 
+            if torch.cuda.is_available():
                 device = "cuda"
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
                 device = "mps"
@@ -159,18 +163,19 @@ class TorchModelBase:
         for k, v in self.optimizer_kwargs.items():
             setattr(self, k, v)
         self.params = [
-            'batch_size',
-            'max_iter',
-            'eta',
-            'optimizer_class',
-            'l2_strength',
-            'gradient_accumulation_steps',
-            'max_grad_norm',
-            'validation_fraction',
-            'early_stopping',
-            'n_iter_no_change',
-            'warm_start',
-            'tol']
+            "batch_size",
+            "max_iter",
+            "eta",
+            "optimizer_class",
+            "l2_strength",
+            "gradient_accumulation_steps",
+            "max_grad_norm",
+            "validation_fraction",
+            "early_stopping",
+            "n_iter_no_change",
+            "warm_start",
+            "tol",
+        ]
         self.params += list(optimizer_kwargs.keys())
 
     def build_dataset(self, *args, **kwargs):
@@ -254,7 +259,8 @@ class TorchModelBase:
             self.model.parameters(),
             lr=self.eta,
             weight_decay=self.l2_strength,
-            **self.optimizer_kwargs)
+            **self.optimizer_kwargs,
+        )
 
     def fit(self, *args):
         """
@@ -330,7 +336,8 @@ class TorchModelBase:
         """
         if self.early_stopping:
             args, dev = self._build_validation_split(
-                *args, validation_fraction=self.validation_fraction)
+                *args, validation_fraction=self.validation_fraction
+            )
 
         # Dataset:
         dataset = self.build_dataset(*args)
@@ -343,38 +350,49 @@ class TorchModelBase:
 
         # Make sure the model is where we want it:
         self.model.to(self.device)
+        print(f"Using device: {self.device}")
+        # print("Compiling model...")
+        # self.model = torch.compile(self.model)
 
         self.model.train()
         self.optimizer.zero_grad()
 
-        for iteration in range(1, self.max_iter+1):
+        print("Begin fitting model")
+        for iteration in tqdm(range(1, self.max_iter + 1)):
 
             epoch_error = 0.0
 
-            for batch_num, batch in enumerate(dataloader, start=1):
+            for batch_num, batch in tqdm(
+                enumerate(dataloader, start=1), total=len(dataloader)
+            ):
 
                 batch = [x.to(self.device) for x in batch]
 
-                X_batch = batch[: -1]
+                X_batch = batch[:-1]
                 y_batch = batch[-1]
 
                 batch_preds = self.model(*X_batch)
 
                 err = self.loss(batch_preds, y_batch)
 
-                if self.gradient_accumulation_steps > 1 and \
-                  self.loss.reduction == "mean":
+                if (
+                    self.gradient_accumulation_steps > 1
+                    and self.loss.reduction == "mean"
+                ):
                     err /= self.gradient_accumulation_steps
 
                 err.backward()
 
                 epoch_error += err.item()
 
-                if batch_num % self.gradient_accumulation_steps == 0 or \
-                  batch_num == len(dataloader):
+                if (
+                    batch_num % self.gradient_accumulation_steps == 0
+                    or batch_num == len(dataloader)
+                ):
                     if self.max_grad_norm is not None:
                         torch.nn.utils.clip_grad_norm_(
-                            self.model.parameters(), self.max_grad_norm)
+                            self.model.parameters(), self.max_grad_norm
+                        )
                     self.optimizer.step()
                     self.optimizer.zero_grad()
 
@@ -386,9 +404,11 @@ class TorchModelBase:
                     utils.progress_bar(
                         "Stopping after epoch {}. Validation score did "
                         "not improve by tol={} for more than {} epochs. "
-                        "Final error is {}".format(iteration, self.tol,
-                            self.n_iter_no_change, epoch_error),
-                        verbose=self.display_progress)
+                        "Final error is {}".format(
+                            iteration, self.tol, self.n_iter_no_change, epoch_error
+                        ),
+                        verbose=self.display_progress,
+                    )
                     break
 
             else:
@@ -398,13 +418,16 @@ class TorchModelBase:
                         "Stopping after epoch {}. Training loss did "
                         "not improve more than tol={}. Final error "
                         "is {}.".format(iteration, self.tol, epoch_error),
-                        verbose=self.display_progress)
+                        verbose=self.display_progress,
+                    )
                     break
 
             utils.progress_bar(
                 "Finished epoch {} of {}; error is {}".format(
-                    iteration, self.max_iter, epoch_error),
-                verbose=self.display_progress)
+                    iteration, self.max_iter, epoch_error
+                ),
+                verbose=self.display_progress,
+            )
 
         if self.early_stopping:
             self.model.load_state_dict(self.best_parameters)
@@ -490,7 +513,8 @@ class TorchModelBase:
             batch_size=self.batch_size,
             shuffle=shuffle,
             pin_memory=True,
-            collate_fn=collate_fn)
+            collate_fn=collate_fn,
+        )
         return dataloader
 
     def _update_no_improvement_count_early_stopping(self, *dev):
@@ -581,7 +605,7 @@ class TorchModelBase:
         # If the batch outputs differ only in their batch size, sharing
         # all other dimensions, then we can concatenate them and maintain
         # a tensor. For simple classification problems, this should hold.
-        if all(x.shape[1: ] == preds[0].shape[1: ] for x in preds[1: ]):
+        if all(x.shape[1:] == preds[0].shape[1:] for x in preds[1:]):
             return torch.cat(preds, axis=0)
         # The batch outputs might differ along other dimensions. This is
         # common for sequence prediction, where different batches might
@@ -597,8 +621,8 @@ class TorchModelBase:
         params = self.params.copy()
         # Obligatorily add `vocab` so that sklearn passes it in when
         # creating new model instances during cross-validation:
-        if hasattr(self, 'vocab'):
-            params += ['vocab']
+        if hasattr(self, "vocab"):
+            params += ["vocab"]
         return {p: getattr(self, p) for p in params}
 
     def set_params(self, **params):
@@ -607,7 +631,9 @@ class TorchModelBase:
                 raise ValueError(
                     "{} is not a parameter for {}. For the list of "
                     "available parameters, use `self.params`.".format(
-                        key, self.__class__.__name__))
+                        key, self.__class__.__name__
+                    )
+                )
             else:
                 setattr(self, key, val)
         return self
@@ -633,7 +659,7 @@ class TorchModelBase:
 
         """
         self.model = self.model.cpu()
-        with open(output_filename, 'wb') as f:
+        with open(output_filename, "wb") as f:
             pickle.dump(self, f)
 
     @staticmethod
@@ -662,7 +688,7 @@ class TorchModelBase:
             Full path to the serialized model file.
 
         """
-        with open(src_filename, 'rb') as f:
+        with open(src_filename, "rb") as f:
             return pickle.load(f)
 
     def __repr__(self):

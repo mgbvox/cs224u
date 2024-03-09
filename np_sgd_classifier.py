@@ -24,7 +24,7 @@ class BasicSGDClassifier(object):
         """
         self.max_iter = max_iter
         self.eta = eta
-        self.params = ['max_iter', 'eta']
+        self.params = ["max_iter", "eta"]
 
     def fit(self, feat_matrix, labels):
         """
@@ -112,7 +112,7 @@ class BasicSGDClassifier(object):
         # Manage the difference between scipy and numpy 1d matrices:
         scores = scores.reshape(self.n_classes_)
         # Set of highest scoring label indices (in case of ties):
-        candidates = np.argwhere(scores==np.max(scores)).flatten()
+        candidates = np.argwhere(scores == np.max(scores)).flatten()
         return random.choice(candidates)
 
     def score(self, X, y):
@@ -167,7 +167,8 @@ def simple_example():
     y = digits.target
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.33, random_state=42)
+        X, y, test_size=0.33, random_state=42
+    )
 
     mod = BasicSGDClassifier(max_iter=500)
 
@@ -182,5 +183,5 @@ def simple_example():
     return mod.score(X_test, y_test)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     simple_example()

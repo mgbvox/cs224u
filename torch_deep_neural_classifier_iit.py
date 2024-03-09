@@ -11,7 +11,7 @@ __version__ = "CS224u, Stanford, Spring 2022"
 
 
 class IITModel(torch.nn.Module):
-    def __init__(self, model, layers, id_to_coords,device):
+    def __init__(self, model, layers, id_to_coords, device):
         super().__init__()
         self.model = model
         self.layers = layers
@@ -19,7 +19,7 @@ class IITModel(torch.nn.Module):
         self.id_to_coords = defaultdict(lambda: defaultdict(list))
         for k, vals in id_to_coords.items():
             for d in vals:
-                layer = d['layer']
+                layer = d["layer"]
                 self.id_to_coords[k][layer].append(d)
 
         self.device = device
@@ -28,25 +28,29 @@ class IITModel(torch.nn.Module):
         return self.model(X)
 
     def forward(self, X):
-        base = X[:,0,:].squeeze(1).type(torch.FloatTensor).to(self.device)
-        coord_ids = X[:,1,:].squeeze(1).type(torch.FloatTensor).to(self.device)
-        sources = X[:,2:,:].to(self.device)
-        sources = [sources[:,j,:].squeeze(1).type(torch.FloatTensor).to(self.device)
-                   for j in range(sources.shape[1])]
+        base = X[:, 0, :].squeeze(1).type(torch.FloatTensor).to(self.device)
+        coord_ids = X[:, 1, :].squeeze(1).type(torch.FloatTensor).to(self.device)
+        sources = X[:, 2:, :].to(self.device)
+        sources = [
+            sources[:, j, :].squeeze(1).type(torch.FloatTensor).to(self.device)
+            for j in range(sources.shape[1])
+        ]
         gets = self.id_to_coords[int(coord_ids.flatten()[0])]
         sets = copy.deepcopy(gets)
         self.activation = dict()
 
         for layer in gets:
             for i, get in enumerate(gets[layer]):
-                handlers = self._gets_sets(gets ={layer: [get]},sets = None)
+                handlers = self._gets_sets(gets={layer: [get]}, sets=None)
                 source_logits = self.no_IIT_forward(sources[i])
                 for handler in handlers:
                     handler.remove()
-                sets[layer][i]["intervention"] = self.activation[f'{get["layer"]}-{get["start"]}-{get["end"]}']
+                sets[layer][i]["intervention"] = self.activation[
+                    f'{get["layer"]}-{get["start"]}-{get["end"]}'
+                ]
 
         base_logits = self.no_IIT_forward(base)
-        handlers = self._gets_sets(gets = None, sets = sets)
+        handlers = self._gets_sets(gets=None, sets=sets)
         counterfactual_logits = self.no_IIT_forward(base)
         for handler in handlers:
             handler.remove()
@@ -61,16 +65,26 @@ class IITModel(torch.nn.Module):
             if sets is not None and layer in sets:
                 layer_sets = sets[layer]
             for set in layer_sets:
-                output = torch.cat([output[:,:set["start"]], set["intervention"], output[:,set["end"]:]], dim = 1)
+                output = torch.cat(
+                    [
+                        output[:, : set["start"]],
+                        set["intervention"],
+                        output[:, set["end"] :],
+                    ],
+                    dim=1,
+                )
             for get in layer_gets:
-                self.activation[f'{get["layer"]}-{get["start"]}-{get["end"]}'] = output[:,get["start"]: get["end"] ]
+                self.activation[f'{get["layer"]}-{get["start"]}-{get["end"]}'] = output[
+                    :, get["start"] : get["end"]
+                ]
             return output
+
         return hook
 
-    def _gets_sets(self,gets=None, sets = None):
+    def _gets_sets(self, gets=None, sets=None):
         handlers = []
         for layer in range(len(self.layers)):
-            hook = self.make_hook(gets,sets, layer)
+            hook = self.make_hook(gets, sets, layer)
             both_handler = self.layers[layer].register_forward_hook(hook)
             handlers.append(both_handler)
         return handlers
@@ -93,7 +107,7 @@ class CrossEntropyLossIIT(nn.Module):
         self.loss = nn.CrossEntropyLoss(reduction="mean")
 
     def forward(self, preds, labels):
-        return self.loss(preds[0], labels[: , 0]) + self.loss(preds[1], labels[:,1])
+        return self.loss(preds[0], labels[:, 0]) + self.loss(preds[1], labels[:, 1])
 
 
 class TorchDeepNeuralClassifierIIT(TorchDeepNeuralClassifier):
@@ -114,7 +128,9 @@ class TorchDeepNeuralClassifierIIT(TorchDeepNeuralClassifier):
         while len(batch_indices) != 0:
             batch_index = random.sample(batch_indices, 1)[0]
             batch_indices.remove(batch_index)
-            output.append([batch_index*self.batch_size + x for x in range(self.batch_size)])
+            output.append(
+                [batch_index * self.batch_size + x for x in range(self.batch_size)]
+            )
         return output
 
     def build_dataset(self, base, sources, base_y, IIT_y, coord_ids):
@@ -134,13 +150,17 @@ class TorchDeepNeuralClassifierIIT(TorchDeepNeuralClassifier):
         IIT_y = [class2index[int(label)] for label in IIT_y]
         IIT_y = torch.tensor(IIT_y)
 
-        bigX = torch.stack([base, coord_ids.unsqueeze(1).expand(-1, base.shape[1])] + sources, dim=1)
+        bigX = torch.stack(
+            [base, coord_ids.unsqueeze(1).expand(-1, base.shape[1])] + sources, dim=1
+        )
         bigy = torch.stack((IIT_y, base_y), dim=1)
         dataset = torch.utils.data.TensorDataset(bigX, bigy)
         return dataset
 
     def prep_input(self, base, sources, coord_ids):
-        bigX = torch.stack([base, coord_ids.unsqueeze(1).expand(-1, base.shape[1])] + sources, dim=1)
+        bigX = torch.stack(
+            [base, coord_ids.unsqueeze(1).expand(-1, base.shape[1])] + sources, dim=1
+        )
         return bigX
 
     def iit_predict(self, base, sources, coord_ids):
@@ -151,7 +171,7 @@ class TorchDeepNeuralClassifierIIT(TorchDeepNeuralClassifier):
         return IIT_preds, base_preds
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import iit
     from sklearn.metrics import classification_report
     import utils
@@ -162,33 +182,38 @@ if __name__ == '__main__':
     data_size = 10000
     embedding_dim = 4
 
-    id_to_coords = {
-        V1: [{"layer": 1, "start": 0, "end": embedding_dim}]
-    }
+    id_to_coords = {V1: [{"layer": 1, "start": 0, "end": embedding_dim}]}
 
-    iit_equality_dataset = iit.get_IIT_equality_dataset(
-        "V1", embedding_dim, data_size)
+    iit_equality_dataset = iit.get_IIT_equality_dataset("V1", embedding_dim, data_size)
 
-    X_base_train, X_sources_train, y_base_train, y_IIT_train, interventions = iit_equality_dataset
-
-    model = TorchDeepNeuralClassifierIIT(
-        hidden_dim=embedding_dim*4,
-        hidden_activation=torch.nn.ReLU(),
-        num_layers=3,
-        id_to_coords=id_to_coords)
-
-    model.fit(
+    (
         X_base_train,
         X_sources_train,
         y_base_train,
         y_IIT_train,
-        interventions)
+        interventions,
+    ) = iit_equality_dataset
 
-    X_base_test, X_sources_test, y_base_test, y_IIT_test, interventions = iit.get_IIT_equality_dataset(
-        "V1", embedding_dim, 100)
+    model = TorchDeepNeuralClassifierIIT(
+        hidden_dim=embedding_dim * 4,
+        hidden_activation=torch.nn.ReLU(),
+        num_layers=3,
+        id_to_coords=id_to_coords,
+    )
+
+    model.fit(X_base_train, X_sources_train, y_base_train, y_IIT_train, interventions)
+
+    (
+        X_base_test,
+        X_sources_test,
+        y_base_test,
+        y_IIT_test,
+        interventions,
+    ) = iit.get_IIT_equality_dataset("V1", embedding_dim, 100)
 
     IIT_preds, base_preds = model.iit_predict(
-        X_base_test, X_sources_test, interventions)
+        X_base_test, X_sources_test, interventions
+    )
 
     print("\nStandard evaluation")
     print(classification_report(y_base_test, base_preds))

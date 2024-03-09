@@ -48,7 +48,7 @@ class ShallowNeuralClassifier(NNModelBase):
 
         """
         super().__init__(**kwargs)
-        self.params += ['hidden_activation', 'd_hidden_activation']
+        self.params += ["hidden_activation", "d_hidden_activation"]
 
     def fit(self, X, y):
         self.input_dim = X.shape[1]
@@ -97,7 +97,8 @@ def simple_example():
     y = digits.target
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.33, random_state=42)
+        X, y, test_size=0.33, random_state=42
+    )
 
     mod = ShallowNeuralClassifier()
 
@@ -113,5 +114,5 @@ def simple_example():
     return accuracy_score(y_test, preds)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     simple_example()

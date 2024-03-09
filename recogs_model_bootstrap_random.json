@@ -1,0 +1,61 @@
+{
+  "predict": {
+    "lm": null,
+    "traces": [],
+    "train": [],
+    "demos": [
+      {
+        "augmented": true,
+        "sentence": "A cake was poked by Ava .",
+        "rationale": "produce the logical form. We identify the main components of the sentence: \"a cake\" as the theme, \"was poked\" as the action, and \"by Ava\" indicating the agent. Since \"a cake\" is indefinite, we do not use an asterisk. Ava, being a proper noun, is directly represented by her name. The logical form will thus connect these elements, showing that Ava is the agent of the poking action, and the cake is the theme of this action.",
+        "logical_form": "cake ( 12 ) ; Ava ( 27 ) ; poke ( 34 ) AND theme ( 34 , 12 ) AND agent ( 34 , 27 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "The girl offered Charlotte the cake .",
+        "rationale": "produce the logical form. We identify \"the girl\" as a definite entity, so we mark it with an asterisk and assign it a unique identifier. \"Charlotte\" and \"the cake\" are also definite entities, with \"Charlotte\" being a proper noun not requiring an asterisk. We then identify the action \"offered\" and its structure: the agent (the girl), the recipient (Charlotte), and the theme (the cake). This allows us to construct the logical form based on these relationships.",
+        "logical_form": "* girl ( 2 ) ; Charlotte ( 17 ) ; * cake ( 21 ) ; offer ( 5 ) AND agent ( 5 , 2 ) AND recipient ( 5 , 17 ) AND theme ( 5 , 21 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "The box was sold to Olivia by a dog .",
+        "rationale": "produce the logical form. First, we identify the main verb \"was sold\" which indicates a passive voice construction. The subject of this sentence is \"The box,\" which becomes the theme in the logical form. \"To Olivia\" indicates the recipient of the action, and \"by a dog\" tells us the agent of the action. Since \"The box\" is definite, we use an asterisk to denote it. \"Olivia\" and \"a dog\" are proper and indefinite nouns, respectively, so they are represented by their names and a generic term without an asterisk.",
+        "logical_form": "* box ( 12 ) ; Olivia ( 27 ) ; dog ( 5 ) ; sell ( 18 ) AND theme ( 18 , 12 ) AND recipient ( 18 , 27 ) AND agent ( 18 , 5 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "William sent a sandwich to the cat .",
+        "rationale": "produce the logical form. We identify the main action or verb in the sentence, which is \"sent\". William is the agent who performs the action, so he is the agent of the verb \"sent\". The object of the action, or the theme, is \"a sandwich\". The recipient of the action is \"the cat\". Therefore, we structure the logical form to reflect these relationships.",
+        "logical_form": "William ( 1 ) ; sandwich ( 9 ) ; * cat ( 17 ) ; send ( 5 ) AND agent ( 5 , 1 ) AND theme ( 5 , 9 ) AND recipient ( 5 , 17 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "Emily nursed .",
+        "rationale": "produce the logical form. First, we identify the main action, which is \"nursed\" performed by \"Emily\". Since there is no direct object or additional information provided, the logical form will focus on the action and its agent.",
+        "logical_form": "Emily ( 12 ) ; nurse ( 8 ) AND agent ( 8 , 12 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "Sophia liked that the cookie was shortened by Ava .",
+        "rationale": "produce the logical form. First, we identify the main action, which is \"liked\" performed by \"Sophia\". Then, we recognize a subordinate clause \"that the cookie was shortened by Ava\", which acts as the object of liking. In this subordinate clause, \"the cookie\" is the theme of the action \"shortened\", and \"Ava\" is the agent of this action. Therefore, we need to represent both the main action and the subordinate clause in the logical form, connecting them appropriately.",
+        "logical_form": "Sophia ( 1 ) ; * cookie ( 9 ) ; Ava ( 17 ) ; like ( 5 ) AND agent ( 5 , 1 ) AND ccomp ( 5 , 13 ) AND shorten ( 13 ) AND theme ( 13 , 9 ) AND agent ( 13 , 17 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "A professor helped the melon .",
+        "rationale": "produce the logical form. First, we identify the main action or verb in the sentence, which is \"helped\". The subject who performs this action is \"a professor\", and the object receiving the action is \"the melon\". Since \"a professor\" is indefinite, it does not get an asterisk, but \"the melon\" is definite and thus gets an asterisk. The professor is the agent of the action, and the melon is the theme of the action.",
+        "logical_form": "professor ( 12 ) ; * melon ( 27 ) ; help ( 5 ) AND agent ( 5 , 12 ) AND theme ( 5 , 27 )"
+      },
+      {
+        "augmented": true,
+        "sentence": "The baby was fed the game in the hole by the teacher .",
+        "rationale": "produce the logical form. First, we identify the main action, which is \"fed\". The agent performing this action is \"the teacher\", the recipient of the action is \"the baby\", and the theme or object involved is \"the game\". Additionally, there's a location specified as \"in the hole\". We translate \"the baby\", \"the game\", and \"the teacher\" with asterisks to indicate definite articles. The logical form will include relations for the agent, theme, recipient, and the location modifier.",
+        "logical_form": "* baby ( 2 ) ; * game ( 7 ) ; * hole ( 13 ) ; * teacher ( 17 ) ; feed ( 20 ) AND agent ( 20 , 17 ) AND recipient ( 20 , 2 ) AND theme ( 20 , 7 ) AND nmod . in ( 7 , 13 )"
+      }
+    ],
+    "signature_instructions": "Translate english sentences into their logical form.\n\n    Note that definite articles are translated into asterisks, e.g:\n\n    The dog -> * dog (some number)\n    ",
+    "signature_prefix": "Logical Form:",
+    "extended_signature_instructions": "Translate english sentences into their logical form.\n\n    Note that definite articles are translated into asterisks, e.g:\n\n    The dog -> * dog (some number)\n    ",
+    "extended_signature_prefix": "Logical Form:"
+  }
+}

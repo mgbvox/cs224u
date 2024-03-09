@@ -10,10 +10,7 @@ __version__ = "CS224u, Stanford, Spring 2022"
 
 
 class TorchShallowNeuralClassifier(TorchModelBase):
-    def __init__(self,
-            hidden_dim=50,
-            hidden_activation=nn.Tanh(),
-            **base_kwargs):
+    def __init__(self, hidden_dim=50, hidden_activation=nn.Tanh(), **base_kwargs):
         """
         A model
 
@@ -48,7 +45,7 @@ class TorchShallowNeuralClassifier(TorchModelBase):
         self.hidden_activation = hidden_activation
         super().__init__(**base_kwargs)
         self.loss = nn.CrossEntropyLoss(reduction="mean")
-        self.params += ['hidden_dim', 'hidden_activation']
+        self.params += ["hidden_dim", "hidden_activation"]
 
     def build_graph(self):
         """
@@ -62,7 +59,8 @@ class TorchShallowNeuralClassifier(TorchModelBase):
         return nn.Sequential(
             nn.Linear(self.input_dim, self.hidden_dim),
             self.hidden_activation,
-            nn.Linear(self.hidden_dim, self.n_classes_))
+            nn.Linear(self.hidden_dim, self.n_classes_),
+        )
 
     def build_dataset(self, X, y=None):
         """
@@ -195,7 +193,8 @@ def simple_example():
     y = digits.target
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.33, random_state=42)
+        X, y, test_size=0.33, random_state=42
+    )
 
     mod = TorchShallowNeuralClassifier()
 
@@ -211,5 +210,5 @@ def simple_example():
     return accuracy_score(y_test, preds)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     simple_example()

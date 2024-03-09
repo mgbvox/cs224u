@@ -1,0 +1,23 @@
+google scholar + semantic scholar
+
+stick w/ course facilitator
+
+application-oriented is okay, but maybe focus just on part
+
+azure vms provided (65 hours!)
+
+proprietary datasets are fine, not needed to be shared
+
+bias towards open source
+
+
+topical ideas:
+test-driven optimization
+healthcare equity - see 988 hold time problem, Radiolab
+translational AI - theory to practice
+
+HOPE-TMS / FMRI / SAINT-TMS
+
+equity in healthcare studies
+
+Where might AI be (ethically) used to serve 

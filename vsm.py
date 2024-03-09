@@ -69,7 +69,7 @@ def neighbors(word, df, distfunc=cosine):
 
     """
     if word not in df.index:
-        raise ValueError('{} is not in this VSM'.format(word))
+        raise ValueError("{} is not in this VSM".format(word))
     w = df.loc[word]
     dists = df.apply(lambda x: distfunc(w, x), axis=1)
     return dists.sort_values()
@@ -87,7 +87,7 @@ def observed_over_expected(df):
 def pmi(df, positive=True):
     df = observed_over_expected(df)
     # Silence distracting warnings about log(0):
-    with np.errstate(divide='ignore'):
+    with np.errstate(divide="ignore"):
         df = np.log(df)
     df[np.isinf(df)] = 0.0  # log(0) = 0
     if positive:
@@ -129,8 +129,7 @@ def ngram_vsm(df, n=2):
     for w, x in df.iterrows():
         for c in get_character_ngrams(w, n):
             unigram2vecs[c].append(x)
-    unigram2vecs = {c: np.array(x).sum(axis=0)
-                    for c, x in unigram2vecs.items()}
+    unigram2vecs = {c: np.array(x).sum(axis=0) for c, x in unigram2vecs.items()}
     cf = pd.DataFrame(unigram2vecs).T
     cf.columns = df.columns
     return cf
@@ -156,7 +155,7 @@ def get_character_ngrams(w, n):
         w = ["<w>"] + list(w) + ["</w>"]
     else:
         w = list(w)
-    return ["".join(w[i: i+n]) for i in range(len(w)-n+1)]
+    return ["".join(w[i : i + n]) for i in range(len(w) - n + 1)]
 
 
 def character_level_rep(word, cf, n=4):
@@ -185,7 +184,9 @@ def character_level_rep(word, cf, n=4):
     return reps.sum(axis=0)
 
 
-def tsne_viz(df, colors=None, output_filename=None, figsize=(40, 50), random_state=None):
+def tsne_viz(
+    df, colors=None, output_filename=None, figsize=(40, 50), random_state=None
+):
     """
     2d plot of `df` using t-SNE, with the points labeled by `df.index`,
     aligned with `colors` (defaults to all black).
@@ -217,34 +218,32 @@ def tsne_viz(df, colors=None, output_filename=None, figsize=(40, 50), random_sta
     # Colors:
     vocab = df.index
     if not colors:
-        colors = ['black' for i in vocab]
+        colors = ["black" for i in vocab]
     # Recommended reduction via PCA or similar:
     n_components = 50 if df.shape[1] >= 50 else df.shape[1]
     dimreduce = PCA(n_components=n_components, random_state=random_state)
     X = dimreduce.fit_transform(df)
     # t-SNE:
     tsne = TSNE(
-        n_components=2,
-        init='random',
-        learning_rate='auto',
-        random_state=random_state)
+        n_components=2, init="random", learning_rate="auto", random_state=random_state
+    )
     tsnemat = tsne.fit_transform(X)
     # Plot values:
-    xvals = tsnemat[: , 0]
-    yvals = tsnemat[: , 1]
+    xvals = tsnemat[:, 0]
+    yvals = tsnemat[:, 1]
     # Plotting:
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=figsize)
-    ax.plot(xvals, yvals, marker='', linestyle='')
+    ax.plot(xvals, yvals, marker="", linestyle="")
     # Text labels:
     for word, x, y, color in zip(vocab, xvals, yvals, colors):
         try:
             ax.annotate(word, (x, y), fontsize=8, color=color)
         except UnicodeDecodeError:  ## Python 2 won't cooperate!
             pass
-    plt.axis('off')
+    plt.axis("off")
     # Output:
     if output_filename:
-        plt.savefig(output_filename, bbox_inches='tight')
+        plt.savefig(output_filename, bbox_inches="tight")
     else:
         plt.show()
 
@@ -330,9 +329,8 @@ def hf_encode(text, tokenizer, add_special_tokens=False):
 
     """
     encoding = tokenizer.encode(
-        text,
-        add_special_tokens=add_special_tokens,
-        return_tensors='pt')
+        text, add_special_tokens=add_special_tokens, return_tensors="pt"
+    )
     if encoding.shape[1] == 0:
         text = tokenizer.unk_token
         encoding = torch.tensor([[tokenizer.vocab[text]]])
@@ -430,15 +428,18 @@ def last_pooling(hidden_states):
 
 
 def _check_pooling_dimensionality(hidden_states):
-     if not len(hidden_states.shape) == 3:
+    if not len(hidden_states.shape) == 3:
         raise ValueError(
             "The input to the pooling function should have 3 dimensions: "
             "it's a batch of k examples, where each example has m vectors, "
             "each of dimensionality n. The function will pool the vectors "
-            "for each example, returning a Tensor of shape (k, n).")
+            "for each example, returning a Tensor of shape (k, n)."
+        )
 
 
-def create_subword_pooling_vsm(vocab, tokenizer, model, layer=1, pool_func=mean_pooling):
+def create_subword_pooling_vsm(
+    vocab, tokenizer, model, layer=1, pool_func=mean_pooling
+):
     vocab_ids = [hf_encode(w, tokenizer) for w in vocab]
     vocab_hiddens = [hf_represent(w, model, layer=layer) for w in vocab_ids]
     pooled = [pool_func(h) for h in vocab_hiddens]
